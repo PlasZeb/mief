@@ -1,11 +1,167 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import '../styles/global.css';
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MI Etika Szakmai Fórum | MIEF</title>
+    <meta
+      name="description"
+      content="Az MI Etika Szakmai Fórum szakmai közösség a mesterséges intelligencia etikai, társadalmi és biztonságpolitikai kérdéseiről."
+    />
+  </head>
+
+  <body class="min-h-screen bg-slate-950 text-slate-100">
+    <main>
+      <section class="relative overflow-hidden border-b border-white/10">
+        <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-slate-950 to-fuchsia-500/10"></div>
+
+        <div class="relative mx-auto max-w-6xl px-6 py-24 sm:py-32">
+          <p class="mb-5 text-sm font-semibold uppercase tracking-[0.3em] text-cyan-300">
+            MIEF
+          </p>
+
+          <h1 class="max-w-4xl text-4xl font-bold tracking-tight text-white sm:text-6xl">
+            MI Etika Szakmai Fórum
+          </h1>
+
+          <p class="mt-8 max-w-3xl text-lg leading-8 text-slate-300 sm:text-xl">
+            Szakmai közösség a mesterséges intelligencia felelős, átlátható
+            és emberközpontú alkalmazásáról — technológiai, jogi, oktatási,
+            filozófiai és biztonságpolitikai nézőpontból.
+          </p>
+
+          <div class="mt-10 flex flex-col gap-4 sm:flex-row">
+            <a
+              href="#kapcsolat"
+              class="rounded-xl bg-cyan-300 px-6 py-3 text-center text-sm font-semibold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:bg-cyan-200"
+            >
+              Kapcsolatfelvétel
+            </a>
+
+            <a
+              href="#miert"
+              class="rounded-xl border border-white/15 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/10"
+            >
+              Miért fontos?
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section id="miert" class="mx-auto max-w-6xl px-6 py-20">
+        <div class="grid gap-10 md:grid-cols-3">
+          <div class="md:col-span-1">
+            <p class="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-300">
+              Küldetés
+            </p>
+            <h2 class="mt-4 text-3xl font-bold text-white">
+              Közös gondolkodás az MI következményeiről
+            </h2>
+          </div>
+
+          <div class="space-y-6 text-lg leading-8 text-slate-300 md:col-span-2">
+            <p>
+              A mesterséges intelligencia nem pusztán technológiai kérdés.
+              Hatással van a döntéshozatalra, a felelősségre, az oktatásra,
+              a közéletre, a biztonságra és az emberi méltóságról alkotott
+              elképzeléseinkre.
+            </p>
+
+            <p>
+              A MIEF célja, hogy szakmai fórumot teremtsen mérnökök,
+              jogászok, kutatók, oktatók, újságírók, katonai és közszolgálati
+              szakemberek, valamint döntéshozók számára.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="border-y border-white/10 bg-white/[0.03]">
+        <div class="mx-auto max-w-6xl px-6 py-20">
+          <p class="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-300">
+            Fókuszterületek
+          </p>
+
+          <div class="mt-8 grid gap-6 md:grid-cols-3">
+            <article class="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+              <h3 class="text-xl font-semibold text-white">
+                Felelős MI
+              </h3>
+              <p class="mt-4 leading-7 text-slate-300">
+                Átláthatóság, elszámoltathatóság, emberi kontroll és
+                társadalmi bizalom az MI-rendszerek alkalmazásában.
+              </p>
+            </article>
+
+            <article class="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+              <h3 class="text-xl font-semibold text-white">
+                Oktatás és szakmai párbeszéd
+              </h3>
+              <p class="mt-4 leading-7 text-slate-300">
+                Workshopok, beszélgetések, közös tanulás és tudásmegosztás
+                az MI etikai kihívásairól.
+              </p>
+            </article>
+
+            <article class="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+              <h3 class="text-xl font-semibold text-white">
+                Biztonság és társadalom
+              </h3>
+              <p class="mt-4 leading-7 text-slate-300">
+                Az MI hatása a biztonságpolitikára, közszolgálatra,
+                információs környezetre és demokratikus intézményekre.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="mx-auto max-w-6xl px-6 py-20">
+        <div class="rounded-3xl border border-cyan-300/20 bg-cyan-300/10 p-8 md:p-10">
+          <p class="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-200">
+            Következő lépés
+          </p>
+
+          <h2 class="mt-4 text-3xl font-bold text-white">
+            Események, szakmai találkozók és közösségépítés
+          </h2>
+
+          <p class="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
+            A honlap hamarosan a fórum eseményeinek, szakmai anyagainak és
+            regisztrációs lehetőségeinek központi felülete lesz.
+          </p>
+        </div>
+      </section>
+
+      <section id="kapcsolat" class="border-t border-white/10 bg-slate-900">
+        <div class="mx-auto max-w-6xl px-6 py-16">
+          <div class="grid gap-8 md:grid-cols-2 md:items-center">
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-300">
+                Kapcsolat
+              </p>
+              <h2 class="mt-4 text-3xl font-bold text-white">
+                Csatlakozz a szakmai párbeszédhez
+              </h2>
+            </div>
+
+            <div class="md:text-right">
+              <a
+                href="mailto:milanmor@gmail.com"
+                class="inline-flex rounded-xl bg-white px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+              >
+                Írj e-mailt
+              </a>
+              <p class="mt-4 text-sm text-slate-400">
+                mief.hu
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
