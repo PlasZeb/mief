@@ -192,27 +192,37 @@ if (Astro.request.method === "POST") {
               <p class="text-sm text-slate-400 italic">A nyilvánosságot vállaló tagok folyamatosan kerülnek feltöltésre.</p>
             </div>
 
+// Szakértők lekérése
+let experts = [];
+if (db) {
+  try {
+    const result = await db.prepare("SELECT * FROM experts ORDER BY created_at ASC").all();
+    experts = result.results || [];
+  } catch (e) {
+    console.error("Experts query error:", e);
+  }
+}
+
+const upcomingEvents = allEvents
+...
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {[
-                { name: "Mányi Balázs", role: "kibervédelmi szakértő, címzetes egyetemi docens, CertEdgeAI tulajdonos" },
-                { name: "Farkas Athéne", role: "információbiztonsági szakértő, vezető auditor, PhD hallgató" },
-                { name: "Molnár András J.", role: "IT szakember, teológus; HUN-REN SZTAKI, Pannon Egyetem" },
-                { name: "Károly Zsolt", role: "szerkesztő, újságíró, AI konzulens (DUEL-PRESS s.r.o., Új Szó napilap)" },
-                { name: "Hegedüs Helén", role: "igazgatóhelyettes, oktató" },
-                { name: "Thoma László", role: "információbiztonsági szakember / pedagógus hallgató" },
-                { name: "Kosik Attila", role: "nyelvi mentor, üzleti tréner" },
-                { name: "Dr. Kollár Csaba", role: "tudományos főmunkatárs" },
-                { name: "Nagy Andrea", role: "mentálhigiénés, tréner" },
-                { name: "Jákó Edina Szabina", role: "projektmenedzser" }
-              ].map((expert) => (
-                <div class="rounded-2xl border border-white/5 bg-white/[0.02] p-6 hover:border-white/10 transition group">
-                  <h5 class="font-bold text-white group-hover:text-cyan-400 transition">{expert.name}</h5>
-                  <p class="mt-2 text-xs text-slate-400 leading-normal">{expert.role}</p>
+              {experts.length > 0 ? (
+                experts.map((expert: any) => (
+                  <div class="rounded-2xl border border-white/5 bg-white/[0.02] p-6 hover:border-white/10 transition group">
+                    <h5 class="font-bold text-white group-hover:text-cyan-400 transition">{expert.name}</h5>
+                    <p class="mt-2 text-xs text-slate-400 leading-normal">{expert.role}</p>
+                  </div>
+                ))
+              ) : (
+                <div class="col-span-full py-12 text-center text-slate-500 italic border border-dashed border-white/5 rounded-2xl">
+                  Szakértőink feltöltése folyamatban...
                 </div>
-              ))}
-              <div class="rounded-2xl border border-dashed border-white/5 bg-transparent p-6 flex items-center justify-center">
-                <span class="text-slate-500 text-sm">... és további szakértők</span>
-              </div>
+              )}
+              {experts.length > 0 && (
+                <div class="rounded-2xl border border-dashed border-white/5 bg-transparent p-6 flex items-center justify-center">
+                  <span class="text-slate-500 text-sm">... és további szakértők</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
