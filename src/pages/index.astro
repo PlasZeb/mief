@@ -33,11 +33,16 @@ if (Astro.request.method === "POST") {
     const email = data.get("email");
     const profession = data.get("profession");
 
-    // Itt történne az adatbázisba mentés (pl. Cloudflare D1)
-    console.log("Registration received:", { name, email, profession });
-    
-    submissionStatus = "success";
+    if (db && name && email && profession) {
+      await db.prepare("INSERT INTO registrations (name, email, profession) VALUES (?, ?, ?)")
+        .bind(name, email, profession)
+        .run();
+      submissionStatus = "success";
+    } else {
+      submissionStatus = "error";
+    }
   } catch (error) {
+    console.error("Registration error:", error);
     submissionStatus = "error";
   }
 }
