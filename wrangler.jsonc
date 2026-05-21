@@ -1,7 +1,15 @@
 {
-  "name": "mief",
-  "compatibility_date": "2026-05-20",
-  "assets": {
-    "directory": "./dist"
-  }
+	"name": "mief",
+	"compatibility_date": "2026-05-20",
+	"assets": {
+		"directory": "./dist"
+	},
+	"d1_databases": [
+		{
+			"binding": "mief_db",
+			"database_name": "mief-db",
+			"database_id": "8203ce7a-a9cb-4968-bd12-b78cdd75c970",
+			"remote": true
+		}
+	]
 }
