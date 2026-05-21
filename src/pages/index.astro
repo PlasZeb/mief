@@ -31,11 +31,14 @@ if (Astro.request.method === "POST") {
     const data = await Astro.request.formData();
     const name = data.get("name");
     const email = data.get("email");
-    const profession = data.get("profession");
+    const professionSelect = data.get("profession");
+    const professionCustom = data.get("profession_custom");
+    
+    const finalProfession = professionSelect === "other" ? professionCustom : professionSelect;
 
-    if (db && name && email && profession) {
+    if (db && name && email && finalProfession) {
       await db.prepare("INSERT INTO registrations (name, email, profession) VALUES (?, ?, ?)")
-        .bind(name, email, profession)
+        .bind(name, email, String(finalProfession))
         .run();
       submissionStatus = "success";
     } else {
@@ -314,22 +317,33 @@ if (Astro.request.method === "POST") {
                     />
                   </div>
                   <div class="grid gap-2">
-                    <label for="profession" class="text-sm font-medium text-slate-300">Szakterület</label>
-                    <select 
-                      id="profession" 
-                      name="profession"
-                      required
-                      class="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition appearance-none"
-                    >
-                      <option value="" disabled selected class="bg-slate-900">Válassz szakterületet</option>
-                      <option value="tech" class="bg-slate-900">Technológia / Mérnök</option>
-                      <option value="legal" class="bg-slate-900">Jog</option>
-                      <option value="edu" class="bg-slate-900">Oktatás</option>
-                      <option value="research" class="bg-slate-900">Kutatás</option>
-                      <option value="other" class="bg-slate-900">Egyéb</option>
-                    </select>
+                   <label for="profession" class="text-sm font-medium text-slate-300">Szakterület</label>
+                   <select
+                     id="profession"
+                     name="profession"
+                     required
+                     class="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition appearance-none"
+                     onchange="document.getElementById('custom-profession-container').style.display = this.value === 'other' ? 'grid' : 'none'; document.getElementById('profession_custom').required = this.value === 'other';"
+                   >
+                     <option value="" disabled selected class="bg-slate-900">Válassz szakterületet</option>
+                     <option value="tech" class="bg-slate-900">Technológia / Mérnök</option>
+                     <option value="legal" class="bg-slate-900">Jog</option>
+                     <option value="edu" class="bg-slate-900">Oktatás</option>
+                     <option value="research" class="bg-slate-900">Kutatás</option>
+                     <option value="other" class="bg-slate-900">Egyéb (saját megadás)</option>
+                   </select>
                   </div>
-                  
+
+                  <div id="custom-profession-container" class="grid gap-2" style="display: none;">
+                   <label for="profession_custom" class="text-sm font-medium text-slate-300">Saját szakterület megnevezése</label>
+                   <input 
+                     type="text" 
+                     id="profession_custom" 
+                     name="profession_custom"
+                     placeholder="Pl. Filozófus, Biztonságpolitika" 
+                     class="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition"
+                   />
+                  </div>
                   {submissionStatus === "error" && (
                     <p class="text-sm text-red-400">Hiba történt a küldés során. Kérjük próbáld újra később!</p>
                   )}
