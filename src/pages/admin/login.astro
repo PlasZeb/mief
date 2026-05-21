@@ -1,12 +1,15 @@
 ---
 import '../../styles/global.css';
 
+// @ts-ignore
+import { env } from 'cloudflare:workers';
+
 let error = "";
 
 if (Astro.request.method === "POST") {
   const data = await Astro.request.formData();
   const password = data.get("password");
-  const envPassword = Astro.locals.runtime.env.ADMIN_PASSWORD;
+  const envPassword = (env as any).ADMIN_PASSWORD;
 
   if (password === envPassword) {
     // EgyszerĹ± session cookie beĂˇllĂ­tĂˇsa
