@@ -1,13 +1,16 @@
 ---
 import '../../styles/global.css';
 
+// @ts-ignore
+import { env } from 'cloudflare:workers';
+
 // Admin ellenőrzés
 const session = Astro.cookies.get("admin_session")?.value;
 if (session !== "true") {
   return Astro.redirect("/admin/login");
 }
 
-const db = Astro.locals.runtime.env.mief_db;
+const db = (env as any).mief_db;
 
 // Esemény mentése (Hozzáadás vagy Szerkesztés)
 if (Astro.request.method === "POST") {
@@ -109,7 +112,7 @@ const { results: events } = await db.prepare("SELECT * FROM events ORDER BY date
               </div>
             )}
             
-            {events.map((event) => (
+            {events.map((event: any) => (
               <div class="bg-slate-800 border border-white/10 rounded-3xl p-6 shadow-lg flex flex-col sm:flex-row gap-6 items-start">
                 <div class="flex-1">
                   <div class="flex items-center gap-3 mb-2">

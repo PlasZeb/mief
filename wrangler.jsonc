@@ -1,9 +1,8 @@
 {
 	"name": "mief",
 	"compatibility_date": "2026-05-20",
-	"main": "dist/server/entry.mjs",
 	"assets": {
-		"directory": "dist/client"
+		"directory": "./dist"
 	},
 	"d1_databases": [
 		{
@@ -11,8 +10,5 @@
 			"database_name": "mief-db",
 			"database_id": "8203ce7a-a9cb-4968-bd12-b78cdd75c970"
 		}
-	],
-	"observability": {
-		"enabled": true
-	}
+	]
 }
