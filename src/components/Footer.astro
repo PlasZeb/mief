@@ -1,0 +1,40 @@
+---
+const currentYear = new Date().getFullYear();
+---
+<footer class="border-t border-white/10 bg-slate-950 py-12 text-slate-400">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-12 md:grid-cols-4">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-2 text-white">
+          <div class="h-6 w-6 rounded bg-gradient-to-br from-cyan-400 to-blue-600"></div>
+          <span class="text-lg font-bold">MIEF</span>
+        </div>
+        <p class="mt-4 max-w-sm text-sm leading-6">
+          Szakmai közösség a mesterséges intelligencia felelős, átlátható és emberközpontú alkalmazásáról.
+        </p>
+      </div>
+      
+      <div>
+        <h3 class="text-sm font-semibold text-white">Navigáció</h3>
+        <ul class="mt-4 space-y-2 text-sm">
+          <li><a href="#miert" class="hover:text-white">Küldetés</a></li>
+          <li><a href="#kinek" class="hover:text-white">Kinek szól?</a></li>
+          <li><a href="#fokusz" class="hover:text-white">Fókuszterületek</a></li>
+          <li><a href="#kapcsolat" class="hover:text-white">Kapcsolat</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-sm font-semibold text-white">Kapcsolat</h3>
+        <ul class="mt-4 space-y-2 text-sm">
+          <li><a href="mailto:milanmor@gmail.com" class="hover:text-white">milanmor@gmail.com</a></li>
+          <li><span class="text-xs">mief.hu</span></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="mt-12 border-t border-white/5 pt-8 text-center text-xs">
+      <p>&copy; {currentYear} MI Etika Szakmai Fórum. Minden jog fenntartva.</p>
+    </div>
+  </div>
+</footer>
