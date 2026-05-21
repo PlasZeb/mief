@@ -1,0 +1,123 @@
+---
+import '../../styles/global.css';
+
+// @ts-ignore
+import { env } from 'cloudflare:workers';
+
+// Admin ellenőrzés
+const session = Astro.cookies.get("admin_session")?.value;
+if (session !== "true") {
+  return Astro.redirect("/admin/login");
+}
+
+const db = (env as any).mief_db;
+
+// Műveletek (Törlés)
+if (Astro.request.method === "POST") {
+  const data = await Astro.request.formData();
+  const action = data.get("action");
+  const id = data.get("id");
+
+  if (action === "delete" && id) {
+    await db.prepare("DELETE FROM registrations WHERE id = ?").bind(id).run();
+  } else if (action === "logout") {
+    Astro.cookies.delete("admin_session");
+    return Astro.redirect("/admin/login");
+  }
+}
+
+// Regisztrációk lekérése
+const { results: registrations } = await db.prepare("SELECT * FROM registrations ORDER BY created_at DESC").all();
+
+const professionLabels: Record<string, string> = {
+  tech: "Technológia / Mérnök",
+  legal: "Jog",
+  edu: "Oktatás",
+  research: "Kutatás",
+  other: "Egyéb"
+};
+---
+
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tagok Kezelése | MIEF Admin</title>
+  </head>
+  <body class="min-h-screen bg-slate-900 text-slate-100 p-6 sm:p-12">
+    <div class="mx-auto max-w-6xl">
+      <header class="flex items-center justify-between mb-12">
+        <div class="flex items-center gap-6">
+          <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 shadow-lg shadow-cyan-500/20"></div>
+          <nav class="flex gap-6">
+            <a href="/admin" class="text-sm font-medium text-slate-400 hover:text-white transition">Események</a>
+            <a href="/admin/members" class="text-sm font-bold text-cyan-400 border-b-2 border-cyan-400 pb-1">Tagok</a>
+          </nav>
+        </div>
+        
+        <form method="POST">
+          <button name="action" value="logout" class="text-sm font-medium text-slate-400 hover:text-white transition">Kijelentkezés</button>
+        </form>
+      </header>
+
+      <div class="bg-slate-800 border border-white/10 rounded-3xl overflow-hidden shadow-xl">
+        <div class="p-8 border-b border-white/5 flex justify-between items-center">
+          <h1 class="text-2xl font-bold text-white">Regisztrált Tagok</h1>
+          <span class="bg-cyan-400/10 text-cyan-400 px-4 py-1 rounded-full text-sm font-bold">
+            Összesen: {registrations.length}
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-white/5 text-xs font-bold uppercase tracking-widest text-slate-400">
+                <th class="px-8 py-4">Név</th>
+                <th class="px-8 py-4">E-mail</th>
+                <th class="px-8 py-4">Szakterület</th>
+                <th class="px-8 py-4">Dátum</th>
+                <th class="px-8 py-4 text-right">Művelet</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5">
+              {registrations.length === 0 && (
+                <tr>
+                  <td colspan="5" class="px-8 py-20 text-center text-slate-500 italic">
+                    Még nem érkezett regisztráció.
+                  </td>
+                </tr>
+              )}
+              {registrations.map((reg: any) => (
+                <tr class="hover:bg-white/[0.02] transition">
+                  <td class="px-8 py-4 font-bold text-white">{reg.name}</td>
+                  <td class="px-8 py-4 text-slate-300">
+                    <a href={`mailto:${reg.email}`} class="hover:text-cyan-400 transition underline underline-offset-4 decoration-white/10">
+                      {reg.email}
+                    </a>
+                  </td>
+                  <td class="px-8 py-4 text-slate-300">
+                    <span class="inline-flex px-3 py-1 rounded-lg bg-white/5 text-xs">
+                      {professionLabels[reg.profession] || reg.profession}
+                    </span>
+                  </td>
+                  <td class="px-8 py-4 text-xs text-slate-500">
+                    {new Date(reg.created_at).toLocaleDateString('hu-HU')}
+                  </td>
+                  <td class="px-8 py-4 text-right">
+                    <form method="POST" onsubmit="return confirm('Biztosan törlöd a regisztrációt?')">
+                      <input type="hidden" name="action" value="delete" />
+                      <input type="hidden" name="id" value={reg.id} />
+                      <button class="text-xs font-bold text-red-400 hover:text-red-300 transition">
+                        Törlés
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
