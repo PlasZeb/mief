@@ -1,0 +1,160 @@
+---
+import '../../styles/global.css';
+
+// @ts-ignore
+import { env } from 'cloudflare:workers';
+
+// Admin ellenőrzés
+const session = Astro.cookies.get("admin_session")?.value;
+if (session !== "true") {
+  return Astro.redirect("/admin/login");
+}
+
+const db = (env as any).mief_db;
+
+// Szakértő mentése (Hozzáadás vagy Szerkesztés)
+if (Astro.request.method === "POST") {
+  const data = await Astro.request.formData();
+  const action = data.get("action");
+  
+  if (action === "save") {
+    const id = data.get("id");
+    const name = data.get("name");
+    const role = data.get("role");
+
+    if (id) {
+      await db.prepare("UPDATE experts SET name = ?, role = ? WHERE id = ?")
+        .bind(name, role, id)
+        .run();
+    } else {
+      await db.prepare("INSERT INTO experts (name, role) VALUES (?, ?)")
+        .bind(name, role)
+        .run();
+    }
+  } else if (action === "delete") {
+    const id = data.get("id");
+    await db.prepare("DELETE FROM experts WHERE id = ?").bind(id).run();
+  } else if (action === "logout") {
+    Astro.cookies.delete("admin_session");
+    return Astro.redirect("/admin/login");
+  }
+}
+
+// Szakértők lekérése
+const { results: experts } = await db.prepare("SELECT * FROM experts ORDER BY created_at ASC").all();
+---
+
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Szakértők Kezelése | MIEF Admin</title>
+  </head>
+  <body class="min-h-screen bg-slate-900 text-slate-100 p-6 sm:p-12">
+    <div class="mx-auto max-w-6xl">
+      <header class="flex items-center justify-between mb-12">
+        <div class="flex items-center gap-6">
+          <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 shadow-lg shadow-cyan-500/20"></div>
+          <nav class="flex gap-6">
+            <a href="/admin" class="text-sm font-medium text-slate-400 hover:text-white transition">Események</a>
+            <a href="/admin/members" class="text-sm font-medium text-slate-400 hover:text-white transition">Tagok</a>
+            <a href="/admin/experts" class="text-sm font-bold text-cyan-400 border-b-2 border-cyan-400 pb-1">Szakértők</a>
+          </nav>
+        </div>
+        
+        <form method="POST">
+          <button name="action" value="logout" class="text-sm font-medium text-slate-400 hover:text-white transition">Kijelentkezés</button>
+        </form>
+      </header>
+
+      <div class="grid gap-12 lg:grid-cols-3">
+        {/* Szerkesztő Form */}
+        <div class="lg:col-span-1">
+          <div class="sticky top-24 bg-slate-800 border border-white/10 rounded-3xl p-8 shadow-xl">
+            <h2 class="text-xl font-bold text-white mb-6" id="form-title">Új szakértő hozzáadása</h2>
+            
+            <form method="POST" id="expert-form" class="space-y-4">
+              <input type="hidden" name="action" value="save" />
+              <input type="hidden" name="id" id="expert-id" />
+              
+              <div>
+                <label for="name" class="block text-sm font-medium text-slate-300 mb-1">Név</label>
+                <input type="text" id="name" name="name" required class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-cyan-400 focus:outline-none" />
+              </div>
+
+              <div>
+                <label for="role" class="block text-sm font-medium text-slate-300 mb-1">Megnevezés / Titulus</label>
+                <textarea id="role" name="role" rows="3" required class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-cyan-400 focus:outline-none" placeholder="Pl. kibervédelmi szakértő, egyetemi docens"></textarea>
+              </div>
+
+              <div class="pt-4 flex gap-3">
+                <button type="submit" class="flex-1 rounded-xl bg-cyan-400 py-3 text-sm font-bold text-slate-900 hover:bg-cyan-300 transition">Mentés</button>
+                <button type="button" onclick="resetForm()" id="reset-btn" class="hidden flex-1 rounded-xl border border-white/10 py-3 text-sm font-bold text-white hover:bg-white/5 transition">Mégse</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {/* Szakértők Listája */}
+        <div class="lg:col-span-2">
+          <div class="space-y-6">
+            {experts.length === 0 && (
+              <div class="text-center py-20 border-2 border-dashed border-white/5 rounded-3xl">
+                <p class="text-slate-500">Nincsenek még szakértők rögzítve.</p>
+              </div>
+            )}
+            
+            {experts.map((expert: any) => (
+              <div class="bg-slate-800 border border-white/10 rounded-3xl p-6 shadow-lg flex flex-col sm:flex-row gap-6 items-start">
+                <div class="flex-1">
+                  <h3 class="text-xl font-bold text-white mb-2">{expert.name}</h3>
+                  <p class="text-sm text-slate-400">{expert.role}</p>
+                </div>
+                
+                <div class="flex sm:flex-col gap-2 w-full sm:w-auto">
+                  <button 
+                    type="button"
+                    class="edit-btn flex-1 sm:w-24 rounded-lg border border-white/10 py-2 text-xs font-bold text-white hover:bg-white/5 transition"
+                    data-id={expert.id}
+                    data-name={expert.name}
+                    data-role={expert.role}
+                  >
+                    Szerkesztés
+                  </button>
+                  <form method="POST" onsubmit="return confirm('Biztosan törlöd a szakértőt?')" class="flex-1">
+                    <input type="hidden" name="action" value="delete" />
+                    <input type="hidden" name="id" value={expert.id} />
+                    <button class="w-full sm:w-24 rounded-lg border border-red-500/20 py-2 text-xs font-bold text-red-400 hover:bg-red-500/10 transition">
+                      Törlés
+                    </button>
+                  </form>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script is:inline>
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('edit-btn')) {
+          const btn = e.target;
+          document.getElementById('form-title').innerText = 'Szakértő szerkesztése';
+          document.getElementById('expert-id').value = btn.dataset.id;
+          document.getElementById('name').value = btn.dataset.name;
+          document.getElementById('role').value = btn.dataset.role;
+          document.getElementById('reset-btn').classList.remove('hidden');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+
+      function resetForm() {
+        document.getElementById('form-title').innerText = 'Új szakértő hozzáadása';
+        document.getElementById('expert-id').value = '';
+        document.getElementById('expert-form').reset();
+        document.getElementById('reset-btn').classList.add('hidden');
+      }
+    </script>
+  </body>
+</html>
