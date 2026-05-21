@@ -8,8 +8,7 @@
 		{
 			"binding": "mief_db",
 			"database_name": "mief-db",
-			"database_id": "8203ce7a-a9cb-4968-bd12-b78cdd75c970",
-			"remote": true
+			"database_id": "8203ce7a-a9cb-4968-bd12-b78cdd75c970"
 		}
 	]
 }
