@@ -4,11 +4,24 @@ import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 import Card from '../components/Card.astro';
 
-const db = Astro.locals.runtime.env.mief_db;
-const { results: allEvents } = await db.prepare("SELECT * FROM events").all();
+const db = Astro.locals.runtime?.env?.mief_db;
+let allEvents = [];
+let dbError = null;
+
+if (db) {
+  try {
+    const { results } = await db.prepare("SELECT * FROM events").all();
+    allEvents = results || [];
+  } catch (e) {
+    console.error("Database query error:", e);
+    dbError = "Nem sikerült betölteni az eseményeket.";
+  }
+} else {
+  console.warn("mief_db binding not found");
+}
 
 const upcomingEvents = allEvents
-  .filter(event => new Date(event.date) >= new Date())
+  .filter(event => event.date && new Date(event.date) >= new Date())
   .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
 let submissionStatus = null;
