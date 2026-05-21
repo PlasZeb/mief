@@ -117,14 +117,17 @@ if (Astro.request.method === "POST") {
         <div class="container mx-auto px-6">
           <div class="max-w-4xl mx-auto text-center">
             <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400">Küldetés</h2>
-            <p class="mt-6 text-3xl font-bold text-white sm:text-4xl leading-tight">
-              A mesterséges intelligencia nem pusztán technológiai kérdés.
+            <p class="mt-6 text-2xl font-medium text-slate-300 italic italic">
+              "Az MI társadalmi, jogi és filozófiai etikai hatásainak elemzése; felelős és átlátható MI-megoldások ösztönzése."
             </p>
-            <p class="mt-8 text-xl leading-relaxed text-slate-300">
-              Hatással van a döntéshozatalra, a felelősségre, az oktatásra, a közéletre, a biztonságra és az emberi méltóságról alkotott elképzeléseinkre.
+            <p class="mt-10 text-lg leading-relaxed text-slate-300">
+              Az <strong>Interdiszciplináris Párbeszédek az MI Felelősségéről és Irányításáról (IPMFI)</strong> az MI Etika Fórum (MIEF) keretében futó, annak civil szervezetként létrejöttét segítő projekt küldetése, hogy hidat képezzen a technológiai innováció és a társadalmi-etikai felelősségvállalás között.
             </p>
-            <p class="mt-6 text-lg leading-relaxed text-slate-400 italic">
-              A MIEF célja, hogy szakmai fórumot teremtsen mérnökök, jogászok, kutatók, oktatók, újságírók, katonai és közszolgálati szakemberek, valamint döntéshozók számára.
+            <p class="mt-6 text-lg leading-relaxed text-slate-300">
+              Hiszünk abban, hogy a mesterséges intelligencia térnyerése nem csupán mérnöki kérdés, hanem olyan komplex kihívás, amelyre csak közösen, több tudományterület összefogásával adhatunk érvényes válaszokat.
+            </p>
+            <p class="mt-6 text-slate-400">
+              Ezért jött létre 2026 januárjában az a multidiszciplináris fórum, amely független civil szerveződés alapon szerveződik online és személyes alkalmakat tartva.
             </p>
           </div>
         </div>
@@ -133,13 +136,16 @@ if (Astro.request.method === "POST") {
       {/* Kinek szól? Section */}
       <section id="kinek" class="py-24 border-y border-white/5 bg-slate-950/50">
         <div class="container mx-auto px-6">
-          <div class="mb-16 text-center">
-            <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400">Kinek szól?</h2>
-            <h3 class="mt-4 text-3xl font-bold text-white">Interdiszciplináris közösség</h3>
+          <div class="mb-16 text-center max-w-3xl mx-auto">
+            <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400">Kik vagyunk</h2>
+            <h3 class="mt-4 text-3xl font-bold text-white">Független szakmai közösség</h3>
+            <p class="mt-6 text-slate-300">
+              Műhelyünk egy olyan közösség, ahol a legkülönbözőbb területek képviselői dolgoznak együtt. Közösségünk erejét a sokszínűség adja, lehetővé téve, hogy az MI-t ne csak kódként, hanem a társadalom szövetét alakító tényezőként vizsgáljuk.
+            </p>
           </div>
           
           <div class="flex flex-wrap justify-center gap-4 max-w-5xl mx-auto">
-            {['Mérnökök', 'Jogászok', 'Kutatók', 'Oktatók', 'Újságírók', 'Filozófusok', 'Közszolgálati szakemberek', 'Döntéshozók', 'Biztonságpolitikai szakértők'].map((target) => (
+            {['Jogászok', 'Pedagógusok', 'IT-szakemberek', 'Filozófusok', 'Üzletemberek', 'Egyetemi oktatók', 'Kutatók', 'Katonai és biztonságpolitikai szakértők'].map((target) => (
               <span class="rounded-full border border-white/10 bg-white/5 px-6 py-2 text-sm font-medium text-slate-200 transition hover:border-cyan-400/50 hover:bg-cyan-400/10 hover:text-cyan-300">
                 {target}
               </span>
@@ -151,27 +157,45 @@ if (Astro.request.method === "POST") {
       {/* Fókuszterületek Section */}
       <section id="fokusz" class="py-24">
         <div class="container mx-auto px-6">
-          <div class="mb-16">
-            <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400 text-center">Mit csinálunk?</h2>
-            <h3 class="mt-4 text-3xl font-bold text-white text-center">Fókuszterületeink</h3>
+          <div class="mb-16 text-center max-w-3xl mx-auto">
+            <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400">Mivel foglalkozunk</h2>
+            <h3 class="mt-4 text-3xl font-bold text-white">Fókuszterületeink</h3>
+            <p class="mt-6 text-slate-300">
+              Rendszeres találkozóinkon és műhelymunka-alkalmainkon olyan kritikus témákat járunk körül, amelyek meghatározzák a jövőnket.
+            </p>
           </div>
 
-          <div class="grid gap-8 md:grid-cols-3">
+          <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             <Card 
-              title="Felelős MI" 
-              description="Átláthatóság, elszámoltathatóság, emberi kontroll és társadalmi bizalom az MI-rendszerek alkalmazásában."
+              title="Felelős AI" 
+              description="Hol végződik a gép és hol kezdődik az ember felelőssége az MI-rendszerek alkalmazásában."
               icon="🛡️"
             />
             <Card 
-              title="Oktatás és szakmai párbeszéd" 
-              description="Workshopok, beszélgetések, közös tanulás és tudásmegosztás az MI etikai kihívásairól."
-              icon="🎓"
+              title="Szabályozás és Irányítás" 
+              description="Az ISO 42001 szabvány alkalmazása és a jogi keretrendszerek elemzése."
+              icon="⚖️"
             />
             <Card 
-              title="Biztonság és társadalom" 
-              description="Az MI hatása a biztonságpolitikára, közszolgálatra, információs környezetre és demokratikus intézményekre."
+              title="Biztonság" 
+              description="Kiberbiztonsági protokollok és az MI szerepe a modern védelmi rendszerekben."
               icon="🏛️"
             />
+            <Card 
+              title="Oktatás és Jövő" 
+              description="Hogyan készítsük fel a társadalmat az ember-gép együttműködés világára."
+              icon="🎓"
+            />
+          </div>
+
+          <div class="mt-20 max-w-3xl mx-auto text-center border-t border-white/5 pt-12">
+             <h3 class="text-2xl font-bold text-white mb-6">Miért csatlakozz hozzánk?</h3>
+             <p class="text-slate-300 leading-relaxed mb-8">
+               Célunk az alapvető értékek lefektetése egy olyan világban, ahol az algoritmusok mindennapjaink részévé válnak. Az IPMFI nem csupán elméleti vitafórum, hanem egy aktív hálózat, ahol a nézőpontok ütköztetése révén valódi, alkalmazható tudás jön létre.
+             </p>
+             <p class="text-slate-400 italic">
+               „A szakember fogalma nálunk szándékosan sokrétű – hiszen a jövőt csak közösen érthetjük meg.”
+             </p>
           </div>
         </div>
       </section>
