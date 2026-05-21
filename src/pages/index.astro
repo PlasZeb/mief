@@ -47,10 +47,10 @@ if (Astro.request.method === "POST") {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MI Etika Szakmai Fórum | MIEF</title>
+    <title>MI Etika Fórum | MIEF</title>
     <meta
       name="description"
-      content="Az MI Etika Szakmai Fórum szakmai közösség a mesterséges intelligencia felelős, átlátható és emberközpontú alkalmazásáról."
+      content="Az MI Etika Fórum szakmai közösség a mesterséges intelligencia felelős, átlátható és emberközpontú alkalmazásáról."
     />
   </head>
 
@@ -76,7 +76,7 @@ if (Astro.request.method === "POST") {
 
               <h1 class="mt-8 text-5xl font-extrabold tracking-tight text-white sm:text-7xl">
                 MI Etika <br />
-                <span class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Szakmai Fórum</span>
+                <span class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Fórum</span>
               </h1>
 
               <p class="mt-8 max-w-2xl text-lg leading-relaxed text-slate-300 sm:text-xl">
@@ -99,18 +99,11 @@ if (Astro.request.method === "POST") {
               </div>
             </div>
 
-            {/* Tech Illustration Placeholder */}
+            {/* Image Illustration */}
             <div class="relative hidden lg:block">
               <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 blur-3xl"></div>
-              <div class="relative rounded-3xl border border-white/10 bg-slate-800/50 p-8 backdrop-blur-2xl">
-                 <div class="grid grid-cols-2 gap-4">
-                    <div class="h-32 rounded-2xl bg-gradient-to-br from-cyan-400 to-cyan-600 opacity-80 animate-pulse"></div>
-                    <div class="h-32 rounded-2xl border border-white/10 bg-white/5"></div>
-                    <div class="h-32 rounded-2xl border border-white/10 bg-white/5"></div>
-                    <div class="h-32 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 opacity-80 animate-pulse" style="animation-delay: 1s;"></div>
-                 </div>
-                 <div class="mt-4 h-4 w-2/3 rounded-full bg-white/10"></div>
-                 <div class="mt-2 h-4 w-1/2 rounded-full bg-white/5"></div>
+              <div class="relative rounded-3xl border border-white/10 bg-slate-800/50 p-4 backdrop-blur-2xl overflow-hidden">
+                 <img src="/assets/logo.jpg" alt="MIEF Illustration" class="w-full h-auto rounded-2xl shadow-2xl opacity-90 transition hover:scale-105 duration-700" />
               </div>
               <div class="absolute -bottom-6 -right-6 h-32 w-32 rounded-full border border-cyan-400/20 bg-cyan-400/10 blur-xl"></div>
               <div class="absolute -top-6 -left-6 h-32 w-32 rounded-full border border-blue-400/20 bg-blue-400/10 blur-xl"></div>
