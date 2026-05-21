@@ -129,8 +129,13 @@ const { results: events } = await db.prepare("SELECT * FROM events ORDER BY date
                 
                 <div class="flex sm:flex-col gap-2 w-full sm:w-auto">
                   <button 
-                    onclick={`editEvent(${JSON.stringify(event)})`}
-                    class="flex-1 sm:w-24 rounded-lg border border-white/10 py-2 text-xs font-bold text-white hover:bg-white/5 transition"
+                    type="button"
+                    class="edit-btn flex-1 sm:w-24 rounded-lg border border-white/10 py-2 text-xs font-bold text-white hover:bg-white/5 transition"
+                    data-id={event.id}
+                    data-title={event.title}
+                    data-location={event.location_url}
+                    data-date={event.date}
+                    data-description={event.description}
                   >
                     Szerkesztés
                   </button>
@@ -150,16 +155,19 @@ const { results: events } = await db.prepare("SELECT * FROM events ORDER BY date
     </div>
 
     <script is:inline>
-      function editEvent(event) {
-        document.getElementById('form-title').innerText = 'Esemény szerkesztése';
-        document.getElementById('event-id').value = event.id;
-        document.getElementById('title').value = event.title;
-        document.getElementById('location_url').value = event.location_url || '';
-        document.getElementById('date').value = event.date;
-        document.getElementById('description').value = event.description;
-        document.getElementById('reset-btn').classList.remove('hidden');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('edit-btn')) {
+          const btn = e.target;
+          document.getElementById('form-title').innerText = 'Esemény szerkesztése';
+          document.getElementById('event-id').value = btn.dataset.id;
+          document.getElementById('title').value = btn.dataset.title;
+          document.getElementById('location_url').value = btn.dataset.location || '';
+          document.getElementById('date').value = btn.dataset.date;
+          document.getElementById('description').value = btn.dataset.description;
+          document.getElementById('reset-btn').classList.remove('hidden');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
 
       function resetForm() {
         document.getElementById('form-title').innerText = 'Új esemény hozzáadása';
