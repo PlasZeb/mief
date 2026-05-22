@@ -21,16 +21,17 @@ if (Astro.request.method === "POST") {
     const id = data.get("id");
     const title = data.get("title");
     const location_url = data.get("location_url");
+    const join_url = data.get("join_url");
     const date = data.get("date");
     const description = data.get("description");
 
     if (id) {
-      await db.prepare("UPDATE events SET title = ?, location_url = ?, date = ?, description = ? WHERE id = ?")
-        .bind(title, location_url, date, description, id)
+      await db.prepare("UPDATE events SET title = ?, location_url = ?, join_url = ?, date = ?, description = ? WHERE id = ?")
+        .bind(title, location_url, join_url, date, description, id)
         .run();
     } else {
-      await db.prepare("INSERT INTO events (title, location_url, date, description) VALUES (?, ?, ?, ?)")
-        .bind(title, location_url, date, description)
+      await db.prepare("INSERT INTO events (title, location_url, join_url, date, description) VALUES (?, ?, ?, ?, ?)")
+        .bind(title, location_url, join_url, date, description)
         .run();
     }
   } else if (action === "delete") {
@@ -85,8 +86,13 @@ const { results: events } = await db.prepare("SELECT * FROM events ORDER BY date
               </div>
 
               <div>
-                <label for="location_url" class="block text-sm font-medium text-slate-300 mb-1">Helyszín / URL</label>
-                <input type="text" id="location_url" name="location_url" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-cyan-400 focus:outline-none" />
+                <label for="location_url" class="block text-sm font-medium text-slate-300 mb-1">Helyszín megnevezése</label>
+                <input type="text" id="location_url" name="location_url" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-cyan-400 focus:outline-none" placeholder="Pl. Online, Budapest, vagy Teams" />
+              </div>
+
+              <div>
+                <label for="join_url" class="block text-sm font-medium text-slate-300 mb-1">Csatlakozási link (URL)</label>
+                <input type="url" id="join_url" name="join_url" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-cyan-400 focus:outline-none" placeholder="https://..." />
               </div>
 
               <div>
@@ -119,12 +125,15 @@ const { results: events } = await db.prepare("SELECT * FROM events ORDER BY date
             {events.map((event: any) => (
               <div class="bg-slate-800 border border-white/10 rounded-3xl p-6 shadow-lg flex flex-col sm:flex-row gap-6 items-start">
                 <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-2">
+                  <div class="flex flex-wrap items-center gap-3 mb-2">
                     <span class="text-xs font-bold uppercase tracking-widest text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">
                       {event.date}
                     </span>
                     {event.location_url && (
                       <span class="text-xs text-slate-400 truncate max-w-[200px]">{event.location_url}</span>
+                    )}
+                    {event.join_url && (
+                       <span class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 font-bold">LINK</span>
                     )}
                   </div>
                   <h3 class="text-xl font-bold text-white mb-2">{event.title}</h3>
@@ -138,6 +147,7 @@ const { results: events } = await db.prepare("SELECT * FROM events ORDER BY date
                     data-id={event.id}
                     data-title={event.title}
                     data-location={event.location_url}
+                    data-join={event.join_url}
                     data-date={event.date}
                     data-description={event.description}
                   >
@@ -166,6 +176,7 @@ const { results: events } = await db.prepare("SELECT * FROM events ORDER BY date
           document.getElementById('event-id').value = btn.dataset.id;
           document.getElementById('title').value = btn.dataset.title;
           document.getElementById('location_url').value = btn.dataset.location || '';
+          document.getElementById('join_url').value = btn.dataset.join || '';
           document.getElementById('date').value = btn.dataset.date;
           document.getElementById('description').value = btn.dataset.description;
           document.getElementById('reset-btn').classList.remove('hidden');
