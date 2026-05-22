@@ -309,13 +309,13 @@ if (Astro.request.method === "POST") {
                         )}
                       </div>
                       <h4 class="mt-2 text-xl font-bold text-white group-hover:text-cyan-300 transition">{event.title}</h4>
-                      {event.location_url && !event.location_url.startsWith('http') && (
+                      {event.location_url && (
                         <p class="mt-1 text-sm text-slate-400">{event.location_url}</p>
                       )}
                     </div>
-                    {event.location_url && event.location_url.startsWith('http') && (
-                      <a href={event.location_url} target="_blank" class="inline-flex items-center justify-center rounded-xl bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/20">
-                        Részletek
+                    {event.join_url && (
+                      <a href={event.join_url} target="_blank" class="inline-flex items-center justify-center rounded-xl bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/20">
+                        Csatlakozás / Részletek
                       </a>
                     )}
                   </div>
