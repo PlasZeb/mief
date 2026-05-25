@@ -2,6 +2,12 @@
 
 Minden jelentős változtatás ebben a fájlban kerül rögzítésre.
 
+## [1.4.0] - 2026-05-25
+### Hozzáadva
+- **LinkedIn Hírek szekció:** Új, vizuális blokk a kezdőlapon a szakmai tartalmak és írások kiemelésére.
+- **Navigációs fejlesztés:** "Hírek" menüpont a fejlécben, amely közvetlenül a LinkedIn szekcióhoz görget.
+- **Prominensebb Social link:** A fejlécben a LinkedIn ikon mellett szöveges felirat is megjelent a jobb érthetőség érdekében.
+
 ## [1.3.0] - 2026-05-21 (Aktuális munkamenet lezárása)
 ### Hozzáadva
 - **Esemény Csatlakozási Link:** Külön `join_url` mező az adatbázisban és az admin felületen (Teams, Zoom, Teamspeak linkekhez).
