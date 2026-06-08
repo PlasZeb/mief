@@ -152,6 +152,7 @@ try {
         <div class="space-y-4">
           {programs.length === 0 && <p class="text-slate-500 italic text-center py-12">Nincsenek még rögzített programok.</p>}
           {programs.map((p) => (
+            <>
             <div class="bg-slate-800/50 border border-white/5 rounded-2xl p-6 flex justify-between items-center group hover:border-emerald-400/30 transition">
               <div>
                 <h3 class="font-bold text-white text-lg">{p.title}</h3>
@@ -211,7 +212,7 @@ try {
                 <button type="submit" class="bg-emerald-400/20 text-emerald-400 hover:bg-emerald-400 hover:text-slate-900 px-4 py-2 rounded-lg text-sm font-bold transition">Mentés</button>
               </div>
             </form>
-          </div>
+            </>
           ))}
         </div>
       </section>
