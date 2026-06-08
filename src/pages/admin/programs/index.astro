@@ -1,0 +1,158 @@
+---
+import '../../../styles/global.css';
+
+// @ts-ignore
+import { env } from 'cloudflare:workers';
+
+const session = Astro.cookies.get("programs_session");
+if (!session || session.value !== "true") {
+  return Astro.redirect("/admin/programs/login");
+}
+
+const db = (env as any).mief_db;
+let programs = [];
+let error = "";
+let success = "";
+
+// Új program felvétele
+if (Astro.request.method === "POST") {
+  const data = await Astro.request.formData();
+  const action = data.get("action");
+
+  if (action === "add") {
+    const title = data.get("title");
+    const url = data.get("url");
+    const location = data.get("location");
+    const date = data.get("date");
+    const notes = data.get("notes");
+
+    if (title && date) {
+      try {
+        await db.prepare("INSERT INTO programs (title, url, location, date, notes) VALUES (?, ?, ?, ?, ?)")
+          .bind(title, url, location, date, notes)
+          .run();
+        success = "Program sikeresen hozzáadva!";
+      } catch (e) {
+        error = "Hiba történt a mentés során.";
+      }
+    } else {
+      error = "A név és az időpont megadása kötelező!";
+    }
+  }
+
+  // Törlés
+  if (action === "delete") {
+    const id = data.get("id");
+    try {
+      await db.prepare("DELETE FROM programs WHERE id = ?").bind(id).run();
+      success = "Program törölve!";
+    } catch (e) {
+      error = "Hiba történt a törlés során.";
+    }
+  }
+}
+
+// Programok listázása
+try {
+  const result = await db.prepare("SELECT * FROM programs ORDER BY date ASC").all();
+  programs = result.results || [];
+} catch (e) {
+  error = "Nem sikerült betölteni a programokat.";
+}
+---
+
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Programajánló Kezelő | MIEF Admin</title>
+  </head>
+  <body class="min-h-screen bg-slate-900 text-slate-100 p-6">
+    <div class="max-w-4xl mx-auto">
+      <header class="flex justify-between items-center mb-12">
+        <div>
+          <h1 class="text-3xl font-bold text-white">Programajánló Kezelő</h1>
+          <p class="text-slate-400 mt-2">Külsős események és konferenciák kezelése</p>
+        </div>
+        <a href="/" class="text-sm text-slate-400 hover:text-white transition">Vissza a főoldalra</a>
+      </header>
+
+      {/* Új program hozzáadása */}
+      <section class="bg-slate-800 border border-white/10 rounded-3xl p-8 mb-12 shadow-xl">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+          Új program hozzáadva
+        </h2>
+
+        {error && <p class="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm">{error}</p>}
+        {success && <p class="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-sm">{success}</p>}
+
+        <form method="POST" class="grid gap-6 md:grid-cols-2">
+          <input type="hidden" name="action" value="add" />
+          
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-slate-400 mb-2">Esemény címe / Elnevezése *</label>
+            <input name="title" required class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" placeholder="Pl: AI Safety Conference 2026" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Helyszín</label>
+            <input name="location" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" placeholder="Pl: Budapest, Corvinus" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Időpont *</label>
+            <input name="date" type="date" required class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Weboldal / Link</label>
+            <input name="url" type="url" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" placeholder="https://..." />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Megjegyzés</label>
+            <input name="notes" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" placeholder="Rövid leírás vagy infó" />
+          </div>
+
+          <div class="md:col-span-2">
+            <button type="submit" class="w-full bg-emerald-400 hover:bg-emerald-300 text-slate-900 font-bold py-4 rounded-xl transition shadow-lg shadow-emerald-500/20">
+              Program mentése
+            </button>
+          </div>
+        </form>
+      </section>
+
+      {/* Meglévő programok */}
+      <section>
+        <h2 class="text-xl font-bold text-white mb-6">Jelenlegi ajánlott programok</h2>
+        <div class="space-y-4">
+          {programs.length === 0 && <p class="text-slate-500 italic text-center py-12">Nincsenek még rögzített programok.</p>}
+          {programs.map((p) => (
+            <div class="bg-slate-800/50 border border-white/5 rounded-2xl p-6 flex justify-between items-center group hover:border-emerald-400/30 transition">
+              <div>
+                <h3 class="font-bold text-white text-lg">{p.title}</h3>
+                <div class="flex flex-wrap gap-4 mt-2 text-sm text-slate-400">
+                  <span class="flex items-center gap-1">📅 {p.date}</span>
+                  {p.location && <span class="flex items-center gap-1">📍 {p.location}</span>}
+                  {p.url && <a href={p.url} target="_blank" class="text-emerald-400 hover:underline">Link</a>}
+                </div>
+                {p.notes && <p class="mt-2 text-sm text-slate-500">{p.notes}</p>}
+              </div>
+              
+              <form method="POST">
+                <input type="hidden" name="action" value="delete" />
+                <input type="hidden" name="id" value={p.id} />
+                <button type="submit" class="p-2 text-slate-500 hover:text-red-400 transition" onclick="return confirm('Biztosan törlöd?')">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </form>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
