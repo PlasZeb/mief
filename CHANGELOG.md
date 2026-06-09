@@ -2,6 +2,19 @@
 
 Minden jelentős változtatás ebben a fájlban kerül rögzítésre.
 
+## [1.5.0] - 2026-06-08
+### Hozzáadva
+- **Programok Admin felület:** Új, dedikált külső adminisztrációs felület a programok kezeléséhez (`/admin/programs`).
+- **Szerkesztési funkció:** A programok mostantól közvetlenül az admin felületen keresztül szerkeszthetők.
+- **Custom Favicon:** Az alapértelmezett Astro ikon lecserélve a MIEF saját `favicon.ico`-jára.
+
+### Javítva
+- **Admin UI:** Szintaktikai hibák javítva a programkezelő felületen, amelyek korábban build hibákat okoztak.
+
+## [1.4.1] - 2026-05-28
+### Hozzáadva
+- **Navigáció:** "Események" menüpont hozzáadva a fejléchez a könnyebb elérhetőség érdekében.
+
 ## [1.4.0] - 2026-05-25
 ### Hozzáadva
 - **LinkedIn Hírek szekció:** Új, vizuális blokk a kezdőlapon a szakmai tartalmak és írások kiemelésére.

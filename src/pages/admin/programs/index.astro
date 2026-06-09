@@ -14,6 +14,18 @@ let programs = [];
 let error = "";
 let success = "";
 
+// Migráció: created_by oszlop hozzáadása (ha még nincs)
+try {
+  await db.prepare("ALTER TABLE programs ADD COLUMN created_by TEXT").run();
+} catch (e) { /* Már létezik */ }
+
+// Automatikus törlés: 3 napnál régebbi bejegyzések eltávolítása
+try {
+  await db.prepare("DELETE FROM programs WHERE created_at < datetime('now', '-3 days')").run();
+} catch (e) {
+  console.error("Auto-delete error:", e);
+}
+
 // Új program felvétele
 if (Astro.request.method === "POST") {
   const data = await Astro.request.formData();
@@ -25,11 +37,12 @@ if (Astro.request.method === "POST") {
     const location = data.get("location");
     const date = data.get("date");
     const notes = data.get("notes");
+    const created_by = data.get("created_by");
 
     if (title && date) {
       try {
-        await db.prepare("INSERT INTO programs (title, url, location, date, notes) VALUES (?, ?, ?, ?, ?)")
-          .bind(title, url, location, date, notes)
+        await db.prepare("INSERT INTO programs (title, url, location, date, notes, created_by) VALUES (?, ?, ?, ?, ?, ?)")
+          .bind(title, url, location, date, notes, created_by)
           .run();
         success = "Program sikeresen hozzáadva!";
       } catch (e) {
@@ -48,11 +61,12 @@ if (Astro.request.method === "POST") {
     const location = data.get("location");
     const date = data.get("date");
     const notes = data.get("notes");
+    const created_by = data.get("created_by");
 
     if (id && title && date) {
       try {
-        await db.prepare("UPDATE programs SET title = ?, url = ?, location = ?, date = ?, notes = ? WHERE id = ?")
-          .bind(title, url, location, date, notes, id)
+        await db.prepare("UPDATE programs SET title = ?, url = ?, location = ?, date = ?, notes = ?, created_by = ? WHERE id = ?")
+          .bind(title, url, location, date, notes, created_by, id)
           .run();
         success = "Program sikeresen módosítva!";
       } catch (e) {
@@ -138,10 +152,17 @@ try {
             <input name="notes" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" placeholder="Rövid leírás vagy infó" />
           </div>
 
+          <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2 text-emerald-400">Felvivő neve (Admin belső) *</label>
+            <input name="created_by" required class="w-full bg-slate-900 border border-emerald-400/20 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" placeholder="Ki rögzíti az eseményt?" />
+            <p class="text-[10px] text-slate-500 mt-1 italic">Ez a mező és a tartalma csak az admin felületen látható.</p>
+          </div>
+
           <div class="md:col-span-2">
             <button type="submit" class="w-full bg-emerald-400 hover:bg-emerald-300 text-slate-900 font-bold py-4 rounded-xl transition shadow-lg shadow-emerald-500/20">
               Program mentése
             </button>
+            <p class="text-center text-[11px] text-slate-500 mt-4 italic">Megjegyzés: A programok a rögzítés után 3 nappal automatikusan törlődnek a rendszerből.</p>
           </div>
         </form>
       </section>
@@ -155,13 +176,17 @@ try {
             <>
             <div class="bg-slate-800/50 border border-white/5 rounded-2xl p-6 flex justify-between items-center group hover:border-emerald-400/30 transition">
               <div>
-                <h3 class="font-bold text-white text-lg">{p.title}</h3>
+                <div class="flex items-center gap-3">
+                  <h3 class="font-bold text-white text-lg">{p.title}</h3>
+                  {p.created_by && <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">👤 {p.created_by}</span>}
+                </div>
                 <div class="flex flex-wrap gap-4 mt-2 text-sm text-slate-400">
                   <span class="flex items-center gap-1">📅 {p.date}</span>
                   {p.location && <span class="flex items-center gap-1">📍 {p.location}</span>}
                   {p.url && <a href={p.url} target="_blank" class="text-emerald-400 hover:underline">Link</a>}
                 </div>
                 {p.notes && <p class="mt-2 text-sm text-slate-500">{p.notes}</p>}
+                <p class="mt-1 text-[10px] text-slate-600">Rögzítve: {p.created_at}</p>
               </div>
               
               <div class="flex gap-2">
@@ -202,6 +227,10 @@ try {
               <div>
                 <label class="block text-xs font-medium text-slate-400 mb-1">Link</label>
                 <input name="url" type="url" value={p.url} class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1 text-emerald-400">Felvivő neve</label>
+                <input name="created_by" value={p.created_by} required class="w-full bg-slate-900/50 border border-emerald-400/20 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
               </div>
               <div>
                 <label class="block text-xs font-medium text-slate-400 mb-1">Megjegyzés</label>
