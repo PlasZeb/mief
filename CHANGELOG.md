@@ -2,6 +2,14 @@
 
 Minden jelentős változtatás ebben a fájlban kerül rögzítésre.
 
+## [1.5.1] - 2026-06-09
+### Hozzáadva
+- **Programok Admin:** "Felvivő neve" mező hozzáadva a beküldő nyomon követéséhez (csak admin felületen).
+- **Automata takarítás:** A programajánlók a rögzítés után 3 nappal automatikusan törlődnek.
+
+### Javítva
+- **Navigáció:** A fejléc "Csatlakozás" gombja most már a regisztrációs szekcióhoz (`#regisztracio`) görget a kapcsolat helyett.
+
 ## [1.5.0] - 2026-06-08
 ### Hozzáadva
 - **Programok Admin felület:** Új, dedikált külső adminisztrációs felület a programok kezeléséhez (`/admin/programs`).
