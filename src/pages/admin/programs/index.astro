@@ -19,9 +19,12 @@ try {
   await db.prepare("ALTER TABLE programs ADD COLUMN created_by TEXT").run();
 } catch (e) { /* Már létezik */ }
 
-// Automatikus törlés: 3 napnál régebbi bejegyzések eltávolítása
+// Automatikus törlés: 3 napnál régebbi bejegyzések eltávolítása (rögzítési idő alapján)
 try {
-  await db.prepare("DELETE FROM programs WHERE created_at < datetime('now', '-3 days')").run();
+  const deleteResult = await db.prepare("DELETE FROM programs WHERE created_at < datetime('now', '-3 days')").run();
+  if (deleteResult.meta?.changes > 0) {
+    console.log(`Auto-deleted ${deleteResult.meta.changes} old programs.`);
+  }
 } catch (e) {
   console.error("Auto-delete error:", e);
 }
