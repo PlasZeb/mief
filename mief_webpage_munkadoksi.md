@@ -101,6 +101,13 @@ export default defineConfig({
 });
 ```
 
+### 2.5. Programok és Adminisztráció (2026. június)
+
+- **Admin felület bővítése:** Bevezetésre került a `/admin/programs` útvonal, amely lehetővé teszi a fórum programjainak dinamikus kezelését.
+- **Szerkesztési funkciók:** Megvalósult a programok helyszíni szerkesztése az admin felületen.
+- **Arculati finomhangolás:** Egyedi `favicon.ico` beállítása a projektben.
+- **Navigáció:** Az "Események" menüpont integrálva lett a fő navigációs sávba.
+
 ---
 
 ## 3. GitHub állapot

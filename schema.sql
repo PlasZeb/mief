@@ -22,5 +22,6 @@ CREATE TABLE IF NOT EXISTS programs (
   location TEXT,
   date TEXT NOT NULL,
   notes TEXT,
+  created_by TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
