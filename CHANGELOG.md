@@ -2,6 +2,10 @@
 
 Minden jelentős változtatás ebben a fájlban kerül rögzítésre.
 
+## [1.5.2] - 2026-06-09
+### Megváltoztatva
+- **Programok Admin:** Az automatikus törlés helyett vizuális kiemelés. A lejárt események (dátum alapján) piros háttérrel és "Lejárt" felirattal jelennek meg, manuálisan törölhetők.
+
 ## [1.5.1] - 2026-06-09
 ### Hozzáadva
 - **Programok Admin:** "Felvivő neve" mező hozzáadva a beküldő nyomon követéséhez (csak admin felületen).

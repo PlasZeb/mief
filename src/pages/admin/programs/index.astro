@@ -13,21 +13,12 @@ const db = (env as any).mief_db;
 let programs = [];
 let error = "";
 let success = "";
+const today = new Date().toISOString().split('T')[0];
 
 // Migráció: created_by oszlop hozzáadása (ha még nincs)
 try {
   await db.prepare("ALTER TABLE programs ADD COLUMN created_by TEXT").run();
 } catch (e) { /* Már létezik */ }
-
-// Automatikus törlés: 3 napnál régebbi bejegyzések eltávolítása (rögzítési idő alapján)
-try {
-  const deleteResult = await db.prepare("DELETE FROM programs WHERE created_at < datetime('now', '-3 days')").run();
-  if (deleteResult.meta?.changes > 0) {
-    console.log(`Auto-deleted ${deleteResult.meta.changes} old programs.`);
-  }
-} catch (e) {
-  console.error("Auto-delete error:", e);
-}
 
 // Új program felvétele
 if (Astro.request.method === "POST") {
@@ -165,7 +156,6 @@ try {
             <button type="submit" class="w-full bg-emerald-400 hover:bg-emerald-300 text-slate-900 font-bold py-4 rounded-xl transition shadow-lg shadow-emerald-500/20">
               Program mentése
             </button>
-            <p class="text-center text-[11px] text-slate-500 mt-4 italic">Megjegyzés: A programok a rögzítés után 3 nappal automatikusan törlődnek a rendszerből.</p>
           </div>
         </form>
       </section>
@@ -175,77 +165,81 @@ try {
         <h2 class="text-xl font-bold text-white mb-6">Jelenlegi ajánlott programok</h2>
         <div class="space-y-4">
           {programs.length === 0 && <p class="text-slate-500 italic text-center py-12">Nincsenek még rögzített programok.</p>}
-          {programs.map((p) => (
-            <>
-            <div class="bg-slate-800/50 border border-white/5 rounded-2xl p-6 flex justify-between items-center group hover:border-emerald-400/30 transition">
-              <div>
-                <div class="flex items-center gap-3">
-                  <h3 class="font-bold text-white text-lg">{p.title}</h3>
-                  {p.created_by && <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">👤 {p.created_by}</span>}
+          {programs.map((p) => {
+            const isExpired = p.date < today;
+            return (
+              <>
+              <div class={`border rounded-2xl p-6 flex justify-between items-center group transition ${isExpired ? 'bg-red-500/10 border-red-500/30 hover:border-red-500/50' : 'bg-slate-800/50 border-white/5 hover:border-emerald-400/30'}`}>
+                <div>
+                  <div class="flex items-center gap-3">
+                    <h3 class="font-bold text-white text-lg">{p.title}</h3>
+                    {p.created_by && <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">👤 {p.created_by}</span>}
+                    {isExpired && <span class="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full border border-red-500/20 font-bold uppercase tracking-wider">Lejárt</span>}
+                  </div>
+                  <div class="flex flex-wrap gap-4 mt-2 text-sm text-slate-400">
+                    <span class={`flex items-center gap-1 ${isExpired ? 'text-red-400 font-bold' : ''}`}>📅 {p.date}</span>
+                    {p.location && <span class="flex items-center gap-1">📍 {p.location}</span>}
+                    {p.url && <a href={p.url} target="_blank" class="text-emerald-400 hover:underline">Link</a>}
+                  </div>
+                  {p.notes && <p class="mt-2 text-sm text-slate-500">{p.notes}</p>}
+                  <p class="mt-1 text-[10px] text-slate-600">Rögzítve: {p.created_at}</p>
                 </div>
-                <div class="flex flex-wrap gap-4 mt-2 text-sm text-slate-400">
-                  <span class="flex items-center gap-1">📅 {p.date}</span>
-                  {p.location && <span class="flex items-center gap-1">📍 {p.location}</span>}
-                  {p.url && <a href={p.url} target="_blank" class="text-emerald-400 hover:underline">Link</a>}
-                </div>
-                {p.notes && <p class="mt-2 text-sm text-slate-500">{p.notes}</p>}
-                <p class="mt-1 text-[10px] text-slate-600">Rögzítve: {p.created_at}</p>
-              </div>
-              
-              <div class="flex gap-2">
-                <button type="button" class="p-2 text-slate-500 hover:text-emerald-400 transition" onclick={`document.getElementById('edit-form-${p.id}').classList.toggle('hidden')`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-                <form method="POST">
-                  <input type="hidden" name="action" value="delete" />
-                  <input type="hidden" name="id" value={p.id} />
-                  <button type="submit" class="p-2 text-slate-500 hover:text-red-400 transition" onclick="return confirm('Biztosan törlöd?')">
+                
+                <div class="flex gap-2">
+                  <button type="button" class="p-2 text-slate-500 hover:text-emerald-400 transition" onclick={`document.getElementById('edit-form-${p.id}').classList.toggle('hidden')`}>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </button>
-                </form>
+                  <form method="POST">
+                    <input type="hidden" name="action" value="delete" />
+                    <input type="hidden" name="id" value={p.id} />
+                    <button type="submit" class="p-2 text-slate-500 hover:text-red-400 transition" onclick="return confirm('Biztosan törlöd?')">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </form>
+                </div>
               </div>
-            </div>
-            
-            {/* Szerkesztő form (alapértelmezetten rejtett) */}
-            <form method="POST" id={`edit-form-${p.id}`} class="hidden mt-6 pt-6 border-t border-white/10 grid gap-4 md:grid-cols-2">
-              <input type="hidden" name="action" value="edit" />
-              <input type="hidden" name="id" value={p.id} />
               
-              <div class="md:col-span-2">
-                <label class="block text-xs font-medium text-slate-400 mb-1">Esemény címe</label>
-                <input name="title" value={p.title} required class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-400 mb-1">Helyszín</label>
-                <input name="location" value={p.location} class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-400 mb-1">Időpont</label>
-                <input name="date" type="date" value={p.date} required class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-400 mb-1">Link</label>
-                <input name="url" type="url" value={p.url} class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-400 mb-1 text-emerald-400">Felvivő neve</label>
-                <input name="created_by" value={p.created_by} required class="w-full bg-slate-900/50 border border-emerald-400/20 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-slate-400 mb-1">Megjegyzés</label>
-                <input name="notes" value={p.notes} class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
-              </div>
-              <div class="md:col-span-2 flex justify-end gap-2 mt-2">
-                <button type="button" onclick={`document.getElementById('edit-form-${p.id}').classList.add('hidden')`} class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white transition">Mégse</button>
-                <button type="submit" class="bg-emerald-400/20 text-emerald-400 hover:bg-emerald-400 hover:text-slate-900 px-4 py-2 rounded-lg text-sm font-bold transition">Mentés</button>
-              </div>
-            </form>
-            </>
-          ))}
+              {/* Szerkesztő form (alapértelmezetten rejtett) */}
+              <form method="POST" id={`edit-form-${p.id}`} class="hidden mt-6 pt-6 border-t border-white/10 grid gap-4 md:grid-cols-2">
+                <input type="hidden" name="action" value="edit" />
+                <input type="hidden" name="id" value={p.id} />
+                
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Esemény címe</label>
+                  <input name="title" value={p.title} required class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Helyszín</label>
+                  <input name="location" value={p.location} class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Időpont</label>
+                  <input name="date" type="date" value={p.date} required class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Link</label>
+                  <input name="url" type="url" value={p.url} class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1 text-emerald-400">Felvivő neve</label>
+                  <input name="created_by" value={p.created_by} required class="w-full bg-slate-900/50 border border-emerald-400/20 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Megjegyzés</label>
+                  <input name="notes" value={p.notes} class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
+                </div>
+                <div class="md:col-span-2 flex justify-end gap-2 mt-2">
+                  <button type="button" onclick={`document.getElementById('edit-form-${p.id}').classList.add('hidden')`} class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white transition">Mégse</button>
+                  <button type="submit" class="bg-emerald-400/20 text-emerald-400 hover:bg-emerald-400 hover:text-slate-900 px-4 py-2 rounded-lg text-sm font-bold transition">Mentés</button>
+                </div>
+              </form>
+              </>
+            );
+          })}
         </div>
       </section>
     </div>

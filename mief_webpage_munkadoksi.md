@@ -106,7 +106,7 @@ export default defineConfig({
 - **Admin felület bővítése:** Bevezetésre került a `/admin/programs` útvonal, amely lehetővé teszi a fórum programjainak dinamikus kezelését.
 - **Szerkesztési funkciók:** Megvalósult a programok helyszíni szerkesztése az admin felületen.
 - **Admin belső mező:** Új "Felvivő neve" mező a programoknál a beküldő azonosításához.
-- **Automata adatkezelés:** 3 napos automatikus törlési logika a programajánlókhoz.
+- **Lejárat kezelése:** Az automatikus törlés helyett vizuális jelzés (piros kiemelés és "Lejárt" címke) a múltbeli eseményeknél.
 - **Arculati finomhangolás:** Egyedi `favicon.ico` beállítása a projektben.
 - **Navigáció:** Az "Események" menüpont integrálva lett a fő navigációs sávba, a "Csatlakozás" gomb pedig a regisztrációs űrlaphoz lett irányítva.
 
