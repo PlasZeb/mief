@@ -421,14 +421,22 @@ if (Astro.request.method === "POST") {
       {/* Események Section */}
       <section id="esemenyek" class="py-24 bg-slate-950/30">
         <div class="container mx-auto px-6">
-          <div class="mb-16">
-            <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400">Események</h2>
-            <h3 class="mt-4 text-3xl font-bold text-white">Szakmai találkozók</h3>
+          <div class="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400">Események</h2>
+              <h3 class="mt-4 text-3xl font-bold text-white">Szakmai találkozók</h3>
+              <p class="mt-4 text-slate-400 max-w-2xl">
+                Online és személyes műhelymunkáinkon a mesterséges intelligencia legégetőbb etikai és szabályozási kérdéseit dolgozzuk fel.
+              </p>
+            </div>
+            <a href="/esemenyek" class="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10 hover:border-cyan-400/50">
+              Teljes eseménytár megnyitása →
+            </a>
           </div>
 
           <div class="grid gap-8 lg:grid-cols-2">
             {upcomingEvents.length > 0 ? (
-              upcomingEvents.map((event) => (
+              upcomingEvents.slice(0, 4).map((event) => (
                 <div class="group relative rounded-3xl border border-white/10 bg-white/5 p-8 transition hover:bg-white/10">
                   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div class="flex-1">
@@ -447,17 +455,14 @@ if (Astro.request.method === "POST") {
                         )}
                       </div>
                       <h4 class="mt-2 text-xl font-bold text-white group-hover:text-cyan-300 transition">{event.title}</h4>
-                      {event.location_url && (
-                        <p class="mt-1 text-sm text-slate-400">{event.location_url}</p>
-                      )}
                     </div>
                     {event.join_url && (
                       <a href={event.join_url} target="_blank" class="inline-flex items-center justify-center rounded-xl bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/20">
-                        Csatlakozás / Részletek
+                        Csatlakozás
                       </a>
                     )}
                   </div>
-                  <p class="mt-6 text-slate-300 leading-relaxed whitespace-pre-wrap">
+                  <p class="mt-6 text-slate-300 leading-relaxed line-clamp-3 whitespace-pre-wrap">
                     {event.description}
                   </p>
                 </div>
@@ -466,7 +471,6 @@ if (Astro.request.method === "POST") {
               <p class="text-slate-400 italic text-lg">Jelenleg nincsenek meghirdetett események. Iratkozz fel, hogy értesülj a következőről!</p>
             )}
           </div>
-          {dbError && <p class="mt-4 text-sm text-red-400">{dbError}</p>}
         </div>
       </section>
 
