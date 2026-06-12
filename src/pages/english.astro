@@ -1,0 +1,89 @@
+---
+import '../styles/global.css';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" />
+    <title>English Summary | MIEF</title>
+    <meta
+      name="description"
+      content="MIEF – AI Ethics Forum: Independent, interdisciplinary professional community and workshop dedicated to responsible AI in Hungary."
+    />
+  </head>
+
+  <body class="min-h-screen bg-slate-900 text-slate-100 antialiased selection:bg-cyan-500/30">
+    <Navbar />
+
+    <main>
+      {/* Hero Section */}
+      <section class="relative min-h-[60vh] flex items-center overflow-hidden border-b border-white/5">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,211,238,0.05),transparent_50%)]"></div>
+        <div class="container mx-auto px-6 relative z-10 py-24">
+          <div class="max-w-4xl">
+            <div class="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-1.5 text-sm font-medium text-cyan-300">
+              Professional Workshop
+            </div>
+            <h1 class="mt-8 text-5xl font-extrabold tracking-tight text-white sm:text-7xl">
+              MIEF – where AI turns from technology into <br />
+              <span class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">social responsibility</span>
+            </h1>
+            <p class="mt-8 text-lg leading-relaxed text-slate-300 sm:text-xl max-w-3xl">
+              MIEF – AI Ethics Forum – is an independent, interdisciplinary professional community and workshop dedicated to the responsible, transparent and human-centred use of artificial intelligence in Hungary.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* About Us Section */}
+      <section class="py-24 bg-slate-950/50">
+        <div class="container mx-auto px-6">
+          <div class="max-w-4xl mx-auto">
+            <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400 mb-6 text-center text-center">About Us</h2>
+            <div class="prose prose-invert prose-lg max-w-none">
+              <p class="text-xl text-slate-300 leading-relaxed mb-8">
+                We examine the social, legal, ethical, and security implications of AI. Our community brings together experts from various fields: lawyers, IT professionals, educators, philosophers, researchers, business leaders, as well as military and security policy experts.
+              </p>
+              <p class="text-lg text-slate-400 leading-relaxed mb-8">
+                We believe that artificial intelligence is not merely an engineering or business issue. AI systems shape decisions, institutions, education, work, security, and social trust. Therefore, we need a space where, alongside technological innovation, aspects of human dignity, responsibility, transparency, and the common good also appear.
+              </p>
+              <p class="text-lg text-slate-400 leading-relaxed italic border-l-4 border-cyan-400 pl-6">
+                Our goal is to create applicable knowledge from professional dialogue: in the form of recommendations, background materials, training, workshops, and accessible professional content.
+              </p>
+            </div>
+
+            <div class="mt-16 grid gap-6 md:grid-cols-2">
+               <div class="p-8 rounded-2xl border border-white/5 bg-white/[0.02]">
+                  <h3 class="text-white font-bold mb-4">Multidisciplinary</h3>
+                  <p class="text-sm text-slate-400">Our strength lies in diversity, allowing us to examine AI not just as code, but as a force shaping the fabric of society.</p>
+               </div>
+               <div class="p-8 rounded-2xl border border-white/5 bg-white/[0.02]">
+                  <h3 class="text-white font-bold mb-4">Independent</h3>
+                  <p class="text-sm text-slate-400">As a civil professional forum, we strive to be guided by professional arguments and public interest rather than narrow business interests.</p>
+               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact CTA */}
+      <section class="py-24 border-t border-white/5">
+        <div class="container mx-auto px-6 text-center">
+          <h2 class="text-3xl font-bold text-white mb-6">Interested in international collaboration?</h2>
+          <p class="text-slate-400 mb-10 max-w-2xl mx-auto">
+            We are open to partnerships with international AI ethics organizations, research centers, and policy workshops.
+          </p>
+          <a href="mailto:info@mief.hu" class="inline-flex items-center justify-center rounded-xl bg-cyan-400 px-8 py-4 text-sm font-bold text-slate-900 transition hover:bg-cyan-300">
+            Contact us at info@mief.hu
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+  </body>
+</html>
