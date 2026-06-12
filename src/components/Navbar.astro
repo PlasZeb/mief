@@ -8,14 +8,14 @@
     </div>
     
     {/* Desktop Menu - Hidden on tablets and below to prevent overlapping */}
-    <div class="hidden xl:flex items-center gap-6 text-sm font-medium text-slate-300">
+    <div class="hidden 2xl:flex items-center gap-6 text-sm font-medium text-slate-300">
       <ul class="flex gap-6">
         <li><a href="#miert" class="transition hover:text-cyan-400">Kik vagyunk</a></li>
-        <li><a href="#kinek" class="transition hover:text-cyan-400">MI-etika</a></li>
+        <li><a href="#kinek" class="transition hover:text-cyan-400">Miért fontos az MI-etika?</a></li>
         <li><a href="#hirek" class="transition hover:text-cyan-400 font-semibold text-cyan-300">Tudástár</a></li>
         <li><a href="#esemenyek" class="transition hover:text-cyan-400">Eseménytár</a></li>
-        <li><a href="#programok" class="transition hover:text-cyan-400">Műhelyek</a></li>
-        <li><a href="#fokusz" class="transition hover:text-cyan-400">Szakterületeink</a></li>
+        <li><a href="#programok" class="transition hover:text-cyan-400">Műhelyek és programok</a></li>
+        <li><a href="#fokusz" class="transition hover:text-cyan-400">Szakértői területeink</a></li>
         <li><a href="#kapcsolat" class="transition hover:text-cyan-400">Kapcsolat</a></li>
       </ul>
     </div>
@@ -34,7 +34,7 @@
       </a>
 
       {/* Hamburger Toggle */}
-      <button id="menu-toggle" class="xl:hidden flex flex-col gap-1.5 p-2 text-slate-300 hover:text-white transition" aria-label="Menu">
+      <button id="menu-toggle" class="2xl:hidden flex flex-col gap-1.5 p-2 text-slate-300 hover:text-white transition" aria-label="Menu">
         <span class="h-0.5 w-6 bg-current transition-all duration-300"></span>
         <span class="h-0.5 w-6 bg-current transition-all duration-300"></span>
         <span class="h-0.5 w-6 bg-current transition-all duration-300"></span>
@@ -43,9 +43,9 @@
   </div>
 
   {/* Mobile Menu Overlay */}
-  <div id="mobile-menu" class="fixed inset-0 z-40 hidden xl:hidden">
+  <div id="mobile-menu" class="fixed inset-0 z-40 hidden 2xl:hidden">
     <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" id="menu-backdrop"></div>
-    <div class="absolute right-0 top-0 h-full w-64 bg-slate-900 border-l border-white/10 p-8 shadow-2xl transition-transform duration-300 translate-x-full" id="menu-content">
+    <div class="absolute right-0 top-0 h-full w-72 bg-slate-900 border-l border-white/10 p-8 shadow-2xl transition-transform duration-300 translate-x-full" id="menu-content">
       <div class="flex justify-end mb-8">
         <button id="menu-close" class="text-slate-400 hover:text-white p-2">
           <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,11 +55,11 @@
       </div>
       <ul class="flex flex-col gap-6 text-lg font-medium text-slate-300">
         <li><a href="#miert" class="mobile-link transition hover:text-cyan-400">Kik vagyunk</a></li>
-        <li><a href="#kinek" class="mobile-link transition hover:text-cyan-400">MI-etika jelentősége</a></li>
+        <li><a href="#kinek" class="mobile-link transition hover:text-cyan-400">Miért fontos az MI-etika?</a></li>
         <li><a href="#hirek" class="mobile-link transition hover:text-cyan-400">Tudástár</a></li>
         <li><a href="#esemenyek" class="mobile-link transition hover:text-cyan-400">Eseménytár</a></li>
-        <li><a href="#programok" class="mobile-link transition hover:text-cyan-400">Műhelyek</a></li>
-        <li><a href="#fokusz" class="mobile-link transition hover:text-cyan-400">Szakterületeink</a></li>
+        <li><a href="#programok" class="mobile-link transition hover:text-cyan-400">Műhelyek és programok</a></li>
+        <li><a href="#fokusz" class="mobile-link transition hover:text-cyan-400">Szakértői területeink</a></li>
         <li><a href="#kapcsolat" class="mobile-link transition hover:text-cyan-400">Kapcsolat</a></li>
       </ul>
       <div class="mt-12 pt-8 border-t border-white/5 flex flex-col gap-6">
