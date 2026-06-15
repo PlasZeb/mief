@@ -7,14 +7,34 @@ import Card from '../components/Card.astro';
 // @ts-ignore
 import { env } from 'cloudflare:workers';
 
+type EventItem = {
+  date: string;
+  title: string;
+  description: string;
+  join_url?: string | null;
+};
+
+type ProgramItem = {
+  date: string;
+  title: string;
+  location?: string | null;
+  notes?: string | null;
+  url?: string | null;
+};
+
+type ExpertItem = {
+  name: string;
+  role: string;
+};
+
 const db = (env as any)?.mief_db;
-let allEvents = [];
+let allEvents: EventItem[] = [];
 let dbError = null;
 
 if (db) {
   try {
     const result = await db.prepare("SELECT * FROM events").all();
-    allEvents = result.results || [];
+    allEvents = (result.results || []) as EventItem[];
   } catch (e) {
     console.error("Database query error:", e);
     dbError = "Nem sikerült betölteni az eseményeket.";
@@ -22,22 +42,22 @@ if (db) {
 }
 
 // Programajánló lekérése
-let recommendedPrograms = [];
+let recommendedPrograms: ProgramItem[] = [];
 if (db) {
   try {
     const result = await db.prepare("SELECT * FROM programs ORDER BY date ASC").all();
-    recommendedPrograms = result.results || [];
+    recommendedPrograms = (result.results || []) as ProgramItem[];
   } catch (e) {
     console.error("Programs query error:", e);
   }
 }
 
 // Szakértők lekérése
-let experts = [];
+let experts: ExpertItem[] = [];
 if (db) {
   try {
     const result = await db.prepare("SELECT * FROM experts ORDER BY created_at ASC").all();
-    experts = result.results || [];
+    experts = (result.results || []) as ExpertItem[];
   } catch (e) {
     console.error("Experts query error:", e);
   }
@@ -144,7 +164,7 @@ if (Astro.request.method === "POST") {
       </section>
 
       {/* Küldetés Section */}
-      <section id="miert" class="py-24 relative overflow-hidden">
+      <section id="miert" class="py-24 relative overflow-hidden bg-slate-900">
         <div class="container mx-auto px-6">
           <div class="max-w-4xl mx-auto text-center">
             <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400">Kik vagyunk?</h2>
@@ -162,30 +182,30 @@ if (Astro.request.method === "POST") {
       </section>
 
       {/* Miért fontos az MI-etika? Section */}
-      <section id="kinek" class="py-24 border-y border-white/5 bg-slate-950/50">
+      <section id="kinek" class="py-24 border-y border-white/5 bg-slate-950/70">
         <div class="container mx-auto px-6">
           <div class="mb-16 text-center max-w-3xl mx-auto">
             <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400">Miért fontos az MI-etika?</h2>
-            <h3 class="mt-4 text-3xl font-bold text-white">Interdiszciplináris válaszok a jövő kihívásaira</h3>
+            <h3 class="mt-4 text-3xl sm:text-4xl font-bold leading-tight text-white">Interdiszciplináris válaszok a jövő kihívásaira</h3>
             <p class="mt-6 text-slate-300">
               Az MI-etika nem oldható meg egyetlen szakterület logikájával. A MIEF értéke abban áll, hogy különböző szakmai nézőpontokat kapcsol össze, és ezekből közérthető, gyakorlati és felelősségteljes válaszokat keres.
             </p>
           </div>
           
           <div class="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
-            <div class="rounded-2xl border border-white/10 bg-white/5 p-8 transition hover:border-cyan-400/50">
+            <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-8 transition hover:border-cyan-400/50">
               <h4 class="text-xl font-bold text-white mb-4">Valódi interdiszciplinaritás</h4>
               <p class="text-slate-400 text-sm leading-relaxed">
                 Nálunk a jogász, a mérnök, a pedagógus, a filozófus, a teológus, az üzleti szakember és a biztonságpolitikai gondolkodó valóban egy asztalnál ül. Nem csak egy részproblémát vizsgálunk, hanem az MI társadalmi hatásainak teljesebb képét.
               </p>
             </div>
-            <div class="rounded-2xl border border-white/10 bg-white/5 p-8 transition hover:border-cyan-400/50">
+            <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-8 transition hover:border-cyan-400/50">
               <h4 class="text-xl font-bold text-white mb-4">Független szakmai működés</h4>
               <p class="text-slate-400 text-sm leading-relaxed">
                 Civil szakmai fórumként arra törekszünk, hogy elemzéseinket és ajánlásainkat ne pártpolitikai vagy szűk üzleti érdekek, hanem szakmai érvek, közérdekű szempontok, emberi méltóság és társadalmi felelősség vezesse.
               </p>
             </div>
-            <div class="rounded-2xl border border-white/10 bg-white/5 p-8 transition hover:border-cyan-400/50">
+            <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-8 transition hover:border-cyan-400/50">
               <h4 class="text-xl font-bold text-white mb-4">Gyakorlati fókusz</h4>
               <p class="text-slate-400 text-sm leading-relaxed">
                 Nem pusztán elméleti vitákat folytatunk. Célunk olyan kézzelfogható outputok létrehozása, mint rövid szakmai háttéranyagok, képzési anyagok, esettanulmányok, ellenőrzőlisták és ajánlások.
@@ -204,16 +224,16 @@ if (Astro.request.method === "POST") {
       </section>
 
       {/* LinkedIn / News Section */}
-      <section id="hirek" class="py-24 relative overflow-hidden">
+      <section id="hirek" class="py-24 relative overflow-hidden bg-slate-900">
         <div class="absolute inset-0 bg-cyan-500/5 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
         <div class="container mx-auto px-6 relative z-10">
-          <div class="relative rounded-3xl border border-white/10 bg-slate-800/40 p-8 md:p-12 backdrop-blur-sm overflow-hidden group">
+          <div class="relative rounded-3xl border border-white/10 bg-slate-900/80 p-8 md:p-12 overflow-hidden group">
             <div class="absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl transition group-hover:bg-cyan-500/20"></div>
             
             <div class="grid gap-12 lg:grid-cols-2 lg:items-center">
               <div>
                 <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400">Tudástár</h2>
-                <h3 class="mt-4 text-3xl font-bold text-white">Szakmai anyagok és állásfoglalások</h3>
+                <h3 class="mt-4 text-3xl sm:text-4xl font-bold leading-tight text-white">Szakmai anyagok és állásfoglalások</h3>
                 <p class="mt-6 text-lg text-slate-300 leading-relaxed">
                   A MIEF Tudástár célja, hogy közérthető, szakmailag megalapozott és gyakorlati szempontból is használható anyagokat tegyen közzé a mesterséges intelligencia etikai, jogi, oktatási, társadalmi és biztonsági kérdéseiről.
                 </p>
@@ -240,7 +260,7 @@ if (Astro.request.method === "POST") {
               
               <div class="relative">
                 <div class="grid gap-4">
-                  <div class="rounded-2xl border border-white/5 bg-slate-900/60 p-6 shadow-xl transform hover:-translate-y-1 transition duration-500">
+                  <div class="rounded-2xl border border-white/10 bg-slate-950/80 p-6 transform hover:-translate-y-1 transition duration-500">
                     <div class="flex items-center gap-3 mb-4">
                       <div class="h-10 w-10 rounded bg-cyan-500/20 flex items-center justify-center">
                         <span class="text-xl">📄</span>
@@ -249,7 +269,7 @@ if (Astro.request.method === "POST") {
                     </div>
                     <p class="text-sm text-slate-300 italic">"Rövid, 2–4 oldalas szakmai háttéranyagok aktuális MI-etikai kérdésekről..."</p>
                   </div>
-                  <div class="rounded-2xl border border-white/5 bg-slate-900/60 p-6 shadow-xl transform translate-x-4 hover:-translate-y-1 transition duration-500 hidden sm:block">
+                  <div class="rounded-2xl border border-white/10 bg-slate-950/80 p-6 transform translate-x-4 hover:-translate-y-1 transition duration-500 hidden sm:block">
                     <div class="flex items-center gap-3 mb-4">
                       <div class="h-10 w-10 rounded bg-blue-500/20 flex items-center justify-center">
                         <span class="text-xl">📢</span>
@@ -258,7 +278,7 @@ if (Astro.request.method === "POST") {
                     </div>
                     <p class="text-sm text-slate-300 italic">"A szakértői közösség által elfogadott szakmai vélemények..."</p>
                   </div>
-                  <div class="rounded-2xl border border-white/5 bg-slate-900/60 p-6 shadow-xl transform translate-x-2 hover:-translate-y-1 transition duration-500">
+                  <div class="rounded-2xl border border-white/10 bg-slate-950/80 p-6 transform translate-x-2 hover:-translate-y-1 transition duration-500">
                     <div class="flex items-center gap-3 mb-4">
                       <div class="h-10 w-10 rounded bg-indigo-500/20 flex items-center justify-center">
                         <span class="text-xl">💡</span>
@@ -287,11 +307,11 @@ if (Astro.request.method === "POST") {
       </section>
 
       {/* Members & Experts Section */}
-      <section id="tagok" class="py-24 relative overflow-hidden">
+      <section id="tagok" class="py-24 relative overflow-hidden bg-slate-950/60 border-y border-white/5">
         <div class="container mx-auto px-6">
           <div class="mb-16 text-center">
             <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400">Szakértőink</h2>
-            <h3 class="mt-4 text-3xl font-bold text-white">Akik a párbeszédet építik</h3>
+            <h3 class="mt-4 text-3xl sm:text-4xl font-bold leading-tight text-white">Akik a párbeszédet építik</h3>
             <p class="mt-6 text-slate-400 max-w-2xl mx-auto">
               A MIEF szakértői különböző területekről érkeznek, hogy az MI hatásait jogi, etikai, társadalmi és biztonsági kihívásként vizsgálják.
             </p>
@@ -333,7 +353,7 @@ if (Astro.request.method === "POST") {
         <div class="container mx-auto px-6">
           <div class="mb-16 text-center max-w-3xl mx-auto">
             <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400">Mivel foglalkozunk?</h2>
-            <h3 class="mt-4 text-3xl font-bold text-white">Szakmai pilléreink</h3>
+            <h3 class="mt-4 text-3xl sm:text-4xl font-bold leading-tight text-white">Szakmai pilléreink</h3>
             <p class="mt-6 text-slate-300">
               A MIEF nem egyetlen szakma válaszát keresi az MI kihívásaira. Működésünk célja, hogy a kutatás, a szakmai párbeszéd, az oktatás, a szabályozási tájékozódás és a közösségépítés összekapcsolódjon.
             </p>
@@ -348,7 +368,7 @@ if (Astro.request.method === "POST") {
               { title: 'Publikáció', desc: 'Független szakmai reflexiókat, esettanulmányokat és ajánlásokat teszünk közzé.' },
               { title: 'Közösségépítés', desc: 'Hazai szakértői hálózatot építünk, amely összeköti a különböző tudományterületeket.' }
             ].map((item) => (
-              <div class="rounded-2xl border border-white/5 bg-white/[0.02] p-6 hover:border-cyan-400/30 transition">
+              <div class="rounded-2xl border border-white/10 bg-slate-900/70 p-6 hover:border-cyan-400/30 transition">
                 <h4 class="font-bold text-white mb-2">{item.title}</h4>
                 <p class="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
               </div>
@@ -358,11 +378,11 @@ if (Astro.request.method === "POST") {
       </section>
 
       {/* Fókuszterületek Section */}
-      <section id="fokusz" class="py-24 bg-slate-950/50">
+      <section id="fokusz" class="py-24 bg-slate-950/70 border-y border-white/5">
         <div class="container mx-auto px-6">
           <div class="mb-16 text-center max-w-3xl mx-auto">
             <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400">Szakértői területeink</h2>
-            <h3 class="mt-4 text-3xl font-bold text-white">Fókuszterületeink</h3>
+            <h3 class="mt-4 text-3xl sm:text-4xl font-bold leading-tight text-white">Fókuszterületeink</h3>
             <p class="mt-6 text-slate-300">
               A MIEF olyan területeken dolgozik, ahol a mesterséges intelligencia technológiai fejlődése közvetlenül érinti az emberi döntést, a társadalmi bizalmat, a jogi felelősséget, az oktatást és a biztonságot.
             </p>
@@ -419,12 +439,12 @@ if (Astro.request.method === "POST") {
       </section>
 
       {/* Események Section */}
-      <section id="esemenyek" class="py-24 bg-slate-950/30">
+      <section id="esemenyek" class="py-24 bg-slate-900">
         <div class="container mx-auto px-6">
           <div class="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
               <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400">Események</h2>
-              <h3 class="mt-4 text-3xl font-bold text-white">Szakmai találkozók</h3>
+              <h3 class="mt-4 text-3xl sm:text-4xl font-bold leading-tight text-white">Szakmai találkozók</h3>
               <p class="mt-4 text-slate-400 max-w-2xl">
                 Online és személyes műhelymunkáinkon a mesterséges intelligencia legégetőbb etikai és szabályozási kérdéseit dolgozzuk fel.
               </p>
@@ -437,7 +457,7 @@ if (Astro.request.method === "POST") {
           <div class="grid gap-8 lg:grid-cols-2">
             {upcomingEvents.length > 0 ? (
               upcomingEvents.slice(0, 4).map((event) => (
-                <div class="group relative rounded-3xl border border-white/10 bg-white/5 p-8 transition hover:bg-white/10">
+                <div class="group relative rounded-3xl border border-white/10 bg-slate-950/70 p-8 transition hover:bg-slate-950">
                   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div class="flex-1">
                       <div class="flex flex-wrap items-center gap-3 mb-2">
@@ -475,19 +495,19 @@ if (Astro.request.method === "POST") {
       </section>
 
       {/* Programajánló Section */}
-      <section id="programok" class="py-24 relative overflow-hidden">
+      <section id="programok" class="py-24 relative overflow-hidden bg-slate-950/60 border-y border-white/5">
         <div class="absolute inset-0 bg-emerald-500/5 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"></div>
         <div class="container mx-auto px-6 relative">
           <div class="mb-16">
             <h2 class="text-sm font-bold uppercase tracking-widest text-emerald-400">Programajánló</h2>
-            <h3 class="mt-4 text-3xl font-bold text-white">Szakmai események, konferenciák, fesztiválok</h3>
+            <h3 class="mt-4 text-3xl sm:text-4xl font-bold leading-tight text-white">Szakmai események, konferenciák, fesztiválok</h3>
             <p class="mt-4 text-slate-400 max-w-2xl">Válogatott külsős események, amelyeket ajánlunk az érdeklődőknek.</p>
           </div>
 
           <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {recommendedPrograms.length > 0 ? (
               recommendedPrograms.map((program) => (
-                <div class="group bg-slate-800/40 border border-white/5 rounded-3xl p-6 transition hover:border-emerald-400/30 hover:bg-slate-800/60 flex flex-col h-full shadow-lg">
+                <div class="group bg-slate-950/75 border border-white/10 rounded-3xl p-6 transition hover:border-emerald-400/30 hover:bg-slate-950 flex flex-col h-full">
                   <div class="flex-1">
                     <div class="flex items-center gap-2 mb-4">
                       <span class="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded-full border border-emerald-400/20">
@@ -522,12 +542,12 @@ if (Astro.request.method === "POST") {
       </section>
 
       {/* Regisztráció Section */}
-      <section id="regisztracio" class="py-24 border-t border-white/5">
+      <section id="regisztracio" class="py-24 bg-slate-900 border-t border-white/5">
         <div class="container mx-auto px-6">
           <div class="grid gap-16 lg:grid-cols-2 lg:items-center">
             <div>
               <h2 class="text-sm font-bold uppercase tracking-widest text-cyan-400">Csatlakozás</h2>
-              <h3 class="mt-4 text-4xl font-bold text-white">Legyél a közösség tagja</h3>
+              <h3 class="mt-4 text-3xl sm:text-4xl font-bold leading-tight text-white">Legyél a közösség tagja</h3>
               <p class="mt-6 text-lg text-slate-300 leading-relaxed">
                 A MIEF egy nyitott szakmai fórum. Ha érdekelnek az MI etikai kérdései, és szívesen részt vennél a párbeszédben vagy eseményeinken, regisztrálj!
               </p>
@@ -549,7 +569,7 @@ if (Astro.request.method === "POST") {
               </ul>
             </div>
 
-            <div class="rounded-3xl border border-white/10 bg-slate-800/50 p-8 backdrop-blur-xl shadow-2xl">
+            <div class="rounded-3xl border border-white/10 bg-slate-950/70 p-8 shadow-2xl">
               {submissionStatus === "success" ? (
                 <div class="text-center py-12">
                   <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-cyan-400/20 text-cyan-400">
