@@ -38,7 +38,7 @@ if (Astro.request.method === "POST") {
     const date = data.get("date");
     const notes = data.get("notes");
     const created_by = data.get("created_by");
-    const is_featured = data.get("is_featured") === "1" ? 1 : 0;
+    const is_featured = (data.getAll("is_featured") as string[]).includes("1") ? 1 : 0;
 
     if (title && date) {
       try {
@@ -63,7 +63,7 @@ if (Astro.request.method === "POST") {
     const date = data.get("date");
     const notes = data.get("notes");
     const created_by = data.get("created_by");
-    const is_featured = data.get("is_featured") === "1" ? 1 : 0;
+    const is_featured = (data.getAll("is_featured") as string[]).includes("1") ? 1 : 0;
 
     if (id && title && date) {
       try {
@@ -160,7 +160,6 @@ try {
             <p class="text-[10px] text-slate-500 mt-1 italic">Ez a mező és a tartalma csak az admin felületen látható.</p>
           </div>
           <div class="md:col-span-2 flex items-center gap-3">
-            <input type="hidden" name="is_featured" value="0" />
             <input type="checkbox" id="is_featured_add" name="is_featured" value="1" class="w-5 h-5 rounded accent-emerald-400 cursor-pointer" />
             <label for="is_featured_add" class="text-sm font-medium text-emerald-300 cursor-pointer">Kiemelt program (nagyobb kártya, „Kiemelt” badge a főoldalon)</label>
           </div>
@@ -246,7 +245,6 @@ try {
                   <input name="notes" value={p.notes} class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
                 </div>
                 <div class="md:col-span-2 flex items-center gap-3">
-                  <input type="hidden" name="is_featured" value="0" />
                   <input type="checkbox" id={`is_featured_${p.id}`} name="is_featured" value="1" checked={p.is_featured ? true : false} class="w-5 h-5 rounded accent-emerald-400 cursor-pointer" />
                   <label for={`is_featured_${p.id}`} class="text-sm font-medium text-emerald-300 cursor-pointer">Kiemelt program</label>
                 </div>
