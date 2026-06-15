@@ -26,7 +26,7 @@ if (Astro.request.method === "POST") {
     const name = data.get("name");
     const role = data.get("role");
     const linkedin_url = data.get("linkedin_url") || null;
-    const is_founder = data.get("is_founder") === "1" ? 1 : 0;
+    const is_founder = (data.getAll("is_founder") as string[]).includes("1") ? 1 : 0;
 
     if (id) {
       await db.prepare("UPDATE experts SET name = ?, role = ?, linkedin_url = ?, is_founder = ? WHERE id = ?")
@@ -99,7 +99,6 @@ const { results: experts } = await db.prepare("SELECT * FROM experts ORDER BY cr
               </div>
 
               <div class="flex items-center gap-3">
-                <input type="hidden" name="is_founder" value="0" />
                 <input type="checkbox" id="is_founder" name="is_founder" value="1" class="w-5 h-5 rounded accent-cyan-400 cursor-pointer" />
                 <label for="is_founder" class="text-sm font-medium text-cyan-300 cursor-pointer">Alapító (kiemelt kártya a weboldalon)</label>
               </div>
