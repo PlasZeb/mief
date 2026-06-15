@@ -23,5 +23,6 @@ CREATE TABLE IF NOT EXISTS programs (
   date TEXT NOT NULL,
   notes TEXT,
   created_by TEXT,
+  is_featured INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

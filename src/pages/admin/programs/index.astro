@@ -10,7 +10,8 @@ if (!session || session.value !== "true") {
 }
 
 const db = (env as any).mief_db;
-let programs = [];
+type ProgramRow = { id: number; title: string; url?: string; location?: string; date: string; notes?: string; created_by?: string; is_featured?: number; created_at?: string; };
+let programs: ProgramRow[] = [];
 let error = "";
 let success = "";
 const today = new Date().toISOString().split('T')[0];
@@ -18,6 +19,11 @@ const today = new Date().toISOString().split('T')[0];
 // Migráció: created_by oszlop hozzáadása (ha még nincs)
 try {
   await db.prepare("ALTER TABLE programs ADD COLUMN created_by TEXT").run();
+} catch (e) { /* Már létezik */ }
+
+// Migráció: is_featured oszlop hozzáadása (ha még nincs)
+try {
+  await db.prepare("ALTER TABLE programs ADD COLUMN is_featured INTEGER DEFAULT 0").run();
 } catch (e) { /* Már létezik */ }
 
 // Új program felvétele
@@ -32,11 +38,12 @@ if (Astro.request.method === "POST") {
     const date = data.get("date");
     const notes = data.get("notes");
     const created_by = data.get("created_by");
+    const is_featured = data.get("is_featured") === "1" ? 1 : 0;
 
     if (title && date) {
       try {
-        await db.prepare("INSERT INTO programs (title, url, location, date, notes, created_by) VALUES (?, ?, ?, ?, ?, ?)")
-          .bind(title, url, location, date, notes, created_by)
+        await db.prepare("INSERT INTO programs (title, url, location, date, notes, created_by, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?)")
+          .bind(title, url, location, date, notes, created_by, is_featured)
           .run();
         success = "Program sikeresen hozzáadva!";
       } catch (e) {
@@ -56,11 +63,12 @@ if (Astro.request.method === "POST") {
     const date = data.get("date");
     const notes = data.get("notes");
     const created_by = data.get("created_by");
+    const is_featured = data.get("is_featured") === "1" ? 1 : 0;
 
     if (id && title && date) {
       try {
-        await db.prepare("UPDATE programs SET title = ?, url = ?, location = ?, date = ?, notes = ?, created_by = ? WHERE id = ?")
-          .bind(title, url, location, date, notes, created_by, id)
+        await db.prepare("UPDATE programs SET title = ?, url = ?, location = ?, date = ?, notes = ?, created_by = ?, is_featured = ? WHERE id = ?")
+          .bind(title, url, location, date, notes, created_by, is_featured, id)
           .run();
         success = "Program sikeresen módosítva!";
       } catch (e) {
@@ -151,7 +159,11 @@ try {
             <input name="created_by" required class="w-full bg-slate-900 border border-emerald-400/20 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" placeholder="Ki rögzíti az eseményt?" />
             <p class="text-[10px] text-slate-500 mt-1 italic">Ez a mező és a tartalma csak az admin felületen látható.</p>
           </div>
-
+          <div class="md:col-span-2 flex items-center gap-3">
+            <input type="hidden" name="is_featured" value="0" />
+            <input type="checkbox" id="is_featured_add" name="is_featured" value="1" class="w-5 h-5 rounded accent-emerald-400 cursor-pointer" />
+            <label for="is_featured_add" class="text-sm font-medium text-emerald-300 cursor-pointer">Kiemelt program (nagyobb kártya, „Kiemelt” badge a főoldalon)</label>
+          </div>
           <div class="md:col-span-2">
             <button type="submit" class="w-full bg-emerald-400 hover:bg-emerald-300 text-slate-900 font-bold py-4 rounded-xl transition shadow-lg shadow-emerald-500/20">
               Program mentése
@@ -174,6 +186,7 @@ try {
                   <div class="flex items-center gap-3">
                     <h3 class="font-bold text-white text-lg">{p.title}</h3>
                     {p.created_by && <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">👤 {p.created_by}</span>}
+                    {p.is_featured ? <span class="text-[10px] bg-emerald-400/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-400/30 font-bold uppercase tracking-wider">★ Kiemelt</span> : null}
                     {isExpired && <span class="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full border border-red-500/20 font-bold uppercase tracking-wider">Lejárt</span>}
                   </div>
                   <div class="flex flex-wrap gap-4 mt-2 text-sm text-slate-400">
@@ -231,6 +244,11 @@ try {
                 <div>
                   <label class="block text-xs font-medium text-slate-400 mb-1">Megjegyzés</label>
                   <input name="notes" value={p.notes} class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
+                </div>
+                <div class="md:col-span-2 flex items-center gap-3">
+                  <input type="hidden" name="is_featured" value="0" />
+                  <input type="checkbox" id={`is_featured_${p.id}`} name="is_featured" value="1" checked={p.is_featured ? true : false} class="w-5 h-5 rounded accent-emerald-400 cursor-pointer" />
+                  <label for={`is_featured_${p.id}`} class="text-sm font-medium text-emerald-300 cursor-pointer">Kiemelt program</label>
                 </div>
                 <div class="md:col-span-2 flex justify-end gap-2 mt-2">
                   <button type="button" onclick={`document.getElementById('edit-form-${p.id}').classList.add('hidden')`} class="px-4 py-2 rounded-lg text-sm text-slate-400 hover:text-white transition">Mégse</button>
