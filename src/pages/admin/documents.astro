@@ -25,8 +25,8 @@ try {
   `).run();
 } catch (e) { console.error(e); }
 
-let success = "";
-let error = "";
+let success = Astro.url.searchParams.get('msg') === 'saved' ? 'Sikeresen mentve!' : (Astro.url.searchParams.get('msg') === 'deleted' ? 'Sikeresen törölve.' : '');
+let error = Astro.url.searchParams.get('error') === 'missing' ? 'Minden mező és fájl kitöltése kötelező!' : '';
 
 // Műveletek kezelése
 if (Astro.request.method === "POST") {
@@ -53,25 +53,26 @@ if (Astro.request.method === "POST") {
         if (id) {
           await db.prepare("UPDATE documents SET title = ?, type = ?, url = ?, published_at = ? WHERE id = ?")
             .bind(title, type, url, published_at, id).run();
-          success = "Dokumentum sikeresen módosítva.";
         } else {
           await db.prepare("INSERT INTO documents (title, type, url, published_at) VALUES (?, ?, ?, ?)")
             .bind(title, type, url, published_at).run();
-          success = "Dokumentum sikeresen hozzáadva.";
         }
+        return Astro.redirect("/admin/documents?msg=saved");
       } catch (e) {
-        error = "Hiba történt a mentés során.";
         console.error(e);
+        return Astro.redirect("/admin/documents?error=save");
       }
     } else {
-      error = "Cím, kategória, dátum, és fájl (vagy link) megadása kötelező!";
+      return Astro.redirect("/admin/documents?error=missing");
     }
   } else if (action === "delete") {
     const id = data.get("id");
     try {
       await db.prepare("DELETE FROM documents WHERE id = ?").bind(id).run();
-      success = "Dokumentum törölve.";
-    } catch (e) { error = "Hiba a törléskor."; }
+      return Astro.redirect("/admin/documents?msg=deleted");
+    } catch (e) { 
+      return Astro.redirect("/admin/documents?error=delete");
+    }
   } else if (action === "logout") {
     Astro.cookies.delete("admin_session");
     return Astro.redirect("/admin/login");
@@ -147,7 +148,7 @@ const { results: documents } = await db.prepare("SELECT * FROM documents ORDER B
                 </div>
                 <div>
                   <label for="url" class="block text-xs font-medium text-slate-400 mb-1">2. Külső link megadása (pl. Google Drive)</label>
-                  <input type="url" id="url" name="url" class="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-2 text-white focus:border-cyan-400 focus:outline-none" placeholder="https://..." />
+                  <input type="text" id="url" name="url" class="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-2 text-white focus:border-cyan-400 focus:outline-none" placeholder="https://..." />
                 </div>
               </div>
 
