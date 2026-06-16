@@ -46,6 +46,46 @@ if (Astro.request.method === "POST") {
           .bind(title, url, location, date, notes, created_by, is_featured)
           .run();
         success = "Program sikeresen hozzáadva!";
+
+        // Email küldés a feliratkozóknak Resend API-n keresztül
+        const resendApiKey = (env as any).RESEND_API_KEY;
+        if (resendApiKey && resendApiKey !== "ide_illeszd_be_az_api_kulcsot") {
+          try {
+            const { results: subscribers } = await db.prepare("SELECT name, email FROM subscribers").all();
+            if (subscribers && subscribers.length > 0) {
+              const formattedDate = new Date(date as string).toLocaleDateString("hu-HU", { year: "numeric", month: "long", day: "numeric" });
+              const emailHtml = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b;">
+                  <h2 style="color: #0891b2;">Új program a MIEF ajánlójában</h2>
+                  <h3 style="margin-bottom: 4px;">${title}</h3>
+                  <p style="color: #475569; margin-top: 0;"><strong>Időpont:</strong> ${formattedDate}</p>
+                  ${location ? `<p style="color: #475569;"><strong>Helyszín:</strong> ${location}</p>` : ""}
+                  ${notes ? `<p style="color: #475569;">${notes}</p>` : ""}
+                  ${url ? `<p><a href="${url}" style="background:#0891b2;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;">Részletek megtekintése</a></p>` : ""}
+                  <hr style="border-color:#e2e8f0; margin-top: 32px;" />
+                  <p style="color:#94a3b8; font-size: 13px;">Ez az email a MIEF hírlevelére való feliratkozásod miatt érkezett. Ha le szeretnél iratkozni, válaszolj erre az emailre.</p>
+                </div>
+              `;
+              await fetch("https://api.resend.com/emails", {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${resendApiKey}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  from: "MIEF <noreply@mief.hu>",
+                  to: (subscribers as any[]).map((s: any) => s.email),
+                  subject: `Új program: ${title} – ${formattedDate}`,
+                  html: emailHtml,
+                }),
+              });
+              success = `Program sikeresen hozzáadva és értesítő elküldve (${subscribers.length} feliratkozónak)!`;
+            }
+          } catch (emailError) {
+            // Az email küldés hibája ne akadályozza a mentést
+            success = "Program sikeresen hozzáadva! (Email küldés sikertelen)";
+          }
+        }
       } catch (e) {
         error = "Hiba történt a mentés során.";
       }
