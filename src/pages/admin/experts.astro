@@ -61,10 +61,12 @@ const { results: experts } = await db.prepare("SELECT * FROM experts ORDER BY cr
       <header class="flex items-center justify-between mb-12">
         <div class="flex items-center gap-6">
           <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 shadow-lg shadow-cyan-500/20"></div>
-          <nav class="flex gap-6">
+          <nav class="flex gap-6 overflow-x-auto pb-2">
             <a href="/admin" class="text-sm font-medium text-slate-400 hover:text-white transition">Események</a>
+            <a href="/admin/programs" class="text-sm font-medium text-slate-400 hover:text-white transition">Programok</a>
             <a href="/admin/members" class="text-sm font-medium text-slate-400 hover:text-white transition">Tagok</a>
             <a href="/admin/experts" class="text-sm font-bold text-cyan-400 border-b-2 border-cyan-400 pb-1">Szakértők</a>
+            <a href="/admin/documents" class="text-sm font-medium text-slate-400 hover:text-white transition">Dokumentumok</a>
             <a href="/admin/subscribers" class="text-sm font-medium text-slate-400 hover:text-white transition">Feliratkozók</a>
           </nav>
         </div>
