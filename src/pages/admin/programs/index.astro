@@ -43,24 +43,23 @@ if (Astro.request.method === "POST") {
             .run();
           success = "Program hozzáadva!";
           
-          // Email küldés jóváhagyott feliratkozóknak
           const resendApiKey = (env as any).RESEND_API_KEY;
           if (resendApiKey && resendApiKey !== "ide_illeszd_be_az_api_kulcsot") {
             try {
               const { results: subs } = await db.prepare("SELECT email FROM subscribers WHERE status = 'approved'").all();
               if (subs && subs.length > 0) {
                 const fDate = new Date(date as string).toLocaleDateString("hu-HU", { year: "numeric", month: "long", day: "numeric" });
+                const emailHtml = "<h2>Új program: " + title + "</h2><p>Időpont: " + fDate + "</p>";
                 await fetch("https://api.resend.com/emails", {
                   method: "POST",
-                  headers: { "Authorization": `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
+                  headers: { "Authorization": "Bearer " + resendApiKey, "Content-Type": "application/json" },
                   body: JSON.stringify({
                     from: "MIEF <noreply@mief.hu>",
                     to: (subs as any[]).map((s: any) => s.email),
-                    subject: `Új program: ${title}`,
-                    html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1e293b;"><h2 style="color:#0891b2;">Új program a MIEF ajánlójában</h2><h3>${title}</h3><p><strong>Időpont:</strong> ${fDate}</p>${location ? `<p><strong>Helyszín:</strong> ${location}</p>` : ""}${notes ? `<p>${notes}</p>` : ""}${url ? `<p><a href="${url}" style="background:#0891b2;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;">Részletek megtekintése</a></p>` : ""}</div>`
+                    subject: "Új program: " + title,
+                    html: emailHtml
                   })
                 });
-                success = "Program és értesítő elküldve!";
               }
             } catch (ee) {}
           }
@@ -70,7 +69,9 @@ if (Astro.request.method === "POST") {
             .run();
           success = "Módosítva!";
         }
-      } catch (e) { error = "Hiba történt!"; }
+      } catch (e) {
+        error = "Hiba történt a mentés során.";
+      }
     }
   }
 
@@ -86,7 +87,8 @@ if (Astro.request.method === "POST") {
   }
 }
 
-const { results: programs } = await db.prepare("SELECT * FROM programs ORDER BY date ASC").all();
+const { results: programsResults } = await db.prepare("SELECT * FROM programs ORDER BY date ASC").all();
+const programs = (programsResults || []) as any[];
 ---
 
 <html lang="hu">
@@ -100,27 +102,26 @@ const { results: programs } = await db.prepare("SELECT * FROM programs ORDER BY 
       <header class="flex items-center justify-between mb-12">
         <div>
           <h1 class="text-3xl font-bold text-white">Programok kezelése</h1>
-          <p class="text-slate-400 mt-1">Külsős események és konferenciák</p>
         </div>
         <div class="flex gap-4 items-center">
           <a href="/" class="text-sm text-slate-400 hover:text-white transition">Főoldal</a>
           <form method="POST">
-            <button name="action" value="logout" class="text-sm font-medium text-red-400 hover:text-red-300 transition">Kijelentkezés</button>
+            <button name="action" value="logout" class="text-sm font-medium text-red-400">Kijelentkezés</button>
           </form>
         </div>
       </header>
 
       <section class="bg-slate-800 border border-white/10 rounded-3xl p-8 mb-12 shadow-xl">
         <h2 class="text-xl font-bold text-white mb-6" id="form-title">Új program hozzáadása</h2>
-        {success && <p class="mb-6 p-4 bg-emerald-500/10 text-emerald-400 rounded-xl text-sm border border-emerald-500/20 font-medium">{success}</p>}
-        {error && <p class="mb-6 p-4 bg-red-500/10 text-red-400 rounded-xl text-sm border border-red-500/20 font-medium">{error}</p>}
+        {success && <p class="mb-6 p-4 bg-emerald-500/10 text-emerald-400 rounded-xl text-sm border border-emerald-500/20">{success}</p>}
+        {error && <p class="mb-6 p-4 bg-red-500/10 text-red-400 rounded-xl text-sm border border-red-500/20">{error}</p>}
         
         <form method="POST" id="program-form" class="grid gap-6 md:grid-cols-2">
           <input type="hidden" name="action" id="form-action" value="add" />
           <input type="hidden" name="id" id="program-id" />
           
           <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-slate-400 mb-2">Esemény címe *</label>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Cím *</label>
             <input name="title" id="title" required class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" />
           </div>
           <div>
@@ -136,7 +137,7 @@ const { results: programs } = await db.prepare("SELECT * FROM programs ORDER BY 
             <input name="location" id="location" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-400 mb-2">Weboldal / Link</label>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Link</label>
             <input name="url" id="url" type="url" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" />
           </div>
           <div>
@@ -148,12 +149,12 @@ const { results: programs } = await db.prepare("SELECT * FROM programs ORDER BY 
             <label for="is_featured" class="text-sm font-medium text-emerald-300 cursor-pointer">Kiemelt program</label>
           </div>
           <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-slate-400 mb-2">Megjegyzés (rövid leírás)</label>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Megjegyzés</label>
             <textarea name="notes" id="notes" rows="3" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none"></textarea>
           </div>
           <div class="md:col-span-2 flex gap-3">
-            <button type="submit" class="flex-1 bg-emerald-400 hover:bg-emerald-300 text-slate-900 font-bold py-4 rounded-xl transition shadow-lg shadow-emerald-500/20">Program mentése</button>
-            <button type="button" onclick="resetForm()" id="reset-btn" class="hidden flex-1 border border-white/10 hover:bg-white/5 text-white font-bold py-4 rounded-xl transition">Mégse</button>
+            <button type="submit" class="flex-1 bg-emerald-400 hover:bg-emerald-300 text-slate-900 font-bold py-4 rounded-xl transition">Program mentése</button>
+            <button type="button" onclick="resetForm()" id="reset-btn" class="hidden flex-1 border border-white/10 text-white font-bold py-4 rounded-xl transition">Mégse</button>
           </div>
         </form>
       </section>
@@ -161,20 +162,18 @@ const { results: programs } = await db.prepare("SELECT * FROM programs ORDER BY 
       <div class="space-y-4">
         <h2 class="text-xl font-bold text-white mb-6">Rögzített programok</h2>
         {programs.length === 0 && <p class="text-slate-500 italic py-8 text-center border-2 border-dashed border-white/5 rounded-3xl">Még nincsenek programok.</p>}
-        {(programs as any[]).map((p) => {
+        {programs.map((p) => {
           const isExpired = p.date < today;
           return (
             <div class={`border rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-center gap-6 group transition ${isExpired ? 'bg-red-500/5 border-red-500/20' : 'bg-slate-800/50 border-white/5 hover:border-emerald-400/30'}`}>
               <div class="flex-1 w-full">
                 <div class="flex items-center gap-3 flex-wrap">
                   <h3 class="font-bold text-white text-lg">{p.title}</h3>
-                  {p.is_featured ? <span class="text-[10px] bg-emerald-400/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-400/30 font-bold">★ KIEMELT</span> : null}
-                  {isExpired && <span class="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full border border-red-500/20 font-bold uppercase">Lejárt</span>}
+                  {p.is_featured ? <span class="text-[10px] bg-emerald-400/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-400/30 font-bold uppercase">★ Kiemelt</span> : null}
                 </div>
                 <div class="flex flex-wrap gap-4 mt-2 text-sm text-slate-400">
                   <span>📅 {p.date}</span>
                   {p.location && <span>📍 {p.location}</span>}
-                  {p.created_by && <span class="opacity-60 text-xs">👤 {p.created_by}</span>}
                 </div>
               </div>
               <div class="flex gap-2 w-full sm:w-auto">
