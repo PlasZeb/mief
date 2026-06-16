@@ -10,7 +10,7 @@ if (!session || session.value !== "true") {
 }
 
 const db = (env as any).mief_db;
-type ProgramRow = { id: number; title: string; url?: string; location?: string; date: string; notes?: string; created_by?: string; is_featured?: number; created_at?: string; };
+type ProgramRow = { id: number; title: string; url?: string; location?: string; date: string; notes?: string; speaker?: string; created_by?: string; is_featured?: number; created_at?: string; };
 let programs: ProgramRow[] = [];
 let error = "";
 let success = "";
@@ -26,6 +26,11 @@ try {
   await db.prepare("ALTER TABLE programs ADD COLUMN is_featured INTEGER DEFAULT 0").run();
 } catch (e) { /* Már létezik */ }
 
+// Migráció: speaker oszlop hozzáadása (ha még nincs)
+try {
+  await db.prepare("ALTER TABLE programs ADD COLUMN speaker TEXT").run();
+} catch (e) { /* Már létezik */ }
+
 // Új program felvétele
 if (Astro.request.method === "POST") {
   const data = await Astro.request.formData();
@@ -37,13 +42,14 @@ if (Astro.request.method === "POST") {
     const location = data.get("location");
     const date = data.get("date");
     const notes = data.get("notes");
+    const speaker = data.get("speaker");
     const created_by = data.get("created_by");
     const is_featured = (data.getAll("is_featured") as string[]).includes("1") ? 1 : 0;
 
     if (title && date) {
       try {
-        await db.prepare("INSERT INTO programs (title, url, location, date, notes, created_by, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?)")
-          .bind(title, url, location, date, notes, created_by, is_featured)
+        await db.prepare("INSERT INTO programs (title, url, location, date, notes, speaker, created_by, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+          .bind(title, url, location, date, notes, speaker, created_by, is_featured)
           .run();
         success = "Program sikeresen hozzáadva!";
 
@@ -102,13 +108,14 @@ if (Astro.request.method === "POST") {
     const location = data.get("location");
     const date = data.get("date");
     const notes = data.get("notes");
+    const speaker = data.get("speaker");
     const created_by = data.get("created_by");
     const is_featured = (data.getAll("is_featured") as string[]).includes("1") ? 1 : 0;
 
     if (id && title && date) {
       try {
-        await db.prepare("UPDATE programs SET title = ?, url = ?, location = ?, date = ?, notes = ?, created_by = ?, is_featured = ? WHERE id = ?")
-          .bind(title, url, location, date, notes, created_by, is_featured, id)
+        await db.prepare("UPDATE programs SET title = ?, url = ?, location = ?, date = ?, notes = ?, speaker = ?, created_by = ?, is_featured = ? WHERE id = ?")
+          .bind(title, url, location, date, notes, speaker, created_by, is_featured, id)
           .run();
         success = "Program sikeresen módosítva!";
       } catch (e) {
@@ -195,6 +202,9 @@ try {
           </div>
 
           <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Előadó tag(ok) <span class="text-slate-500 font-normal">(ha van MIEF tag előadó)</span></label>
+            <input name="speaker" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" placeholder="Pl: Kiss János, Nagy Éva" />
+          </div>
             <label class="block text-sm font-medium text-slate-400 mb-2 text-emerald-400">Felvivő neve (Admin belső) *</label>
             <input name="created_by" required class="w-full bg-slate-900 border border-emerald-400/20 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" placeholder="Ki rögzíti az eseményt?" />
             <p class="text-[10px] text-slate-500 mt-1 italic">Ez a mező és a tartalma csak az admin felületen látható.</p>
@@ -225,6 +235,7 @@ try {
                   <div class="flex items-center gap-3">
                     <h3 class="font-bold text-white text-lg">{p.title}</h3>
                     {p.created_by && <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">👤 {p.created_by}</span>}
+                    {p.speaker && <span class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-500/20">🎤 {p.speaker}</span>}
                     {p.is_featured ? <span class="text-[10px] bg-emerald-400/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-400/30 font-bold uppercase tracking-wider">★ Kiemelt</span> : null}
                     {isExpired && <span class="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full border border-red-500/20 font-bold uppercase tracking-wider">Lejárt</span>}
                   </div>
@@ -283,6 +294,10 @@ try {
                 <div>
                   <label class="block text-xs font-medium text-slate-400 mb-1">Megjegyzés</label>
                   <input name="notes" value={p.notes} class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Előadó tag(ok)</label>
+                  <input name="speaker" value={p.speaker} class="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-400 outline-none" placeholder="Pl: Kiss János, Nagy Éva" />
                 </div>
                 <div class="md:col-span-2 flex items-center gap-3">
                   <input type="checkbox" id={`is_featured_${p.id}`} name="is_featured" value="1" checked={p.is_featured ? true : false} class="w-5 h-5 rounded accent-emerald-400 cursor-pointer" />

@@ -20,6 +20,7 @@ type ProgramItem = {
   location?: string | null;
   notes?: string | null;
   url?: string | null;
+  speaker?: string | null;
   is_featured?: number | null;
 };
 
@@ -485,14 +486,14 @@ if (Astro.request.method === "POST") {
         <div class="container mx-auto px-6">
           <div class="mb-14 sm:mb-16 flex flex-col md:flex-row md:items-end justify-between gap-5 sm:gap-6">
             <div>
-              <h2 class="section-kicker">Események</h2>
-              <h3 class="section-heading">Szakmai találkozók</h3>
+              <h2 class="section-kicker">Műhelyek</h2>
+              <h3 class="section-heading">Szakmai műhelymunkáink</h3>
               <p class="mt-4 text-slate-300 max-w-2xl leading-relaxed">
                 Online és személyes műhelymunkáinkon a mesterséges intelligencia legégetőbb etikai és szabályozási kérdéseit dolgozzuk fel.
               </p>
             </div>
             <a href="/esemenyek" class="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10 hover:border-cyan-400/50">
-              Teljes eseménytár megnyitása →
+              Teljes műhelytár megnyitása →
             </a>
           </div>
 
@@ -572,6 +573,12 @@ if (Astro.request.method === "POST") {
                     {program.notes && (
                       <p class={`mt-4 text-slate-300 leading-relaxed italic ${program.is_featured ? 'text-sm sm:text-base line-clamp-3 sm:line-clamp-4' : 'text-sm line-clamp-3'}`}>
                         "{program.notes}"
+                      </p>
+                    )}
+                    {program.speaker && (
+                      <p class="mt-3 text-sm text-cyan-300 flex items-center gap-1.5">
+                        <span class="text-base">🎤</span>
+                        <span>Előadó: <strong>{program.speaker}</strong></span>
                       </p>
                     )}
                   </div>
