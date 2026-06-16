@@ -7,12 +7,12 @@ import Footer from '../components/Footer.astro';
 import { env } from 'cloudflare:workers';
 
 const db = (env as any)?.mief_db;
-type ExpertRow = { id: number; name: string; role: string; linkedin_url?: string | null; is_founder?: number | null; image_url?: string | null; show_on_main?: number | null; };
+type ExpertRow = { id: number; name: string; role: string; linkedin_url?: string | null; is_founder?: number | null; image_url?: string | null; display_order?: number | null; };
 let experts: ExpertRow[] = [];
 
 if (db) {
   try {
-    const result = await db.prepare("SELECT * FROM experts ORDER BY is_founder DESC, created_at ASC").all();
+    const result = await db.prepare("SELECT * FROM experts ORDER BY is_founder DESC, display_order ASC, created_at ASC").all();
     experts = result.results || [];
   } catch (e) {
     console.error("Experts query error:", e);

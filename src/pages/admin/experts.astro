@@ -16,7 +16,7 @@ const db = (env as any).mief_db;
 try { await db.prepare("ALTER TABLE experts ADD COLUMN linkedin_url TEXT").run(); } catch (e) {}
 try { await db.prepare("ALTER TABLE experts ADD COLUMN is_founder INTEGER DEFAULT 0").run(); } catch (e) {}
 try { await db.prepare("ALTER TABLE experts ADD COLUMN image_url TEXT").run(); } catch (e) {}
-try { await db.prepare("ALTER TABLE experts ADD COLUMN show_on_main INTEGER DEFAULT 0").run(); } catch (e) {}
+try { await db.prepare("ALTER TABLE experts ADD COLUMN display_order INTEGER DEFAULT 10").run(); } catch (e) {}
 
 let success = Astro.url.searchParams.get('msg') === 'saved' ? 'Sikeresen mentve!' : (Astro.url.searchParams.get('msg') === 'deleted' ? 'Sikeresen törölve.' : '');
 let error = Astro.url.searchParams.get('error') === 'save' ? 'Hiba történt a mentés során.' : '';
@@ -32,7 +32,7 @@ if (Astro.request.method === "POST") {
     const role = data.get("role");
     const linkedin_url = data.get("linkedin_url") || null;
     const is_founder = (data.getAll("is_founder") as string[]).includes("1") ? 1 : 0;
-    const show_on_main = (data.getAll("show_on_main") as string[]).includes("1") ? 1 : 0;
+    const display_order = parseInt(data.get("display_order") as string) || 10;
     const imageFile = data.get("image_file") as File;
     
     let image_url = data.get("current_image_url") as string || null;
@@ -47,12 +47,12 @@ if (Astro.request.method === "POST") {
       }
 
       if (id) {
-        await db.prepare("UPDATE experts SET name = ?, role = ?, linkedin_url = ?, is_founder = ?, show_on_main = ?, image_url = ? WHERE id = ?")
-          .bind(name, role, linkedin_url, is_founder, show_on_main, image_url, id)
+        await db.prepare("UPDATE experts SET name = ?, role = ?, linkedin_url = ?, is_founder = ?, display_order = ?, image_url = ? WHERE id = ?")
+          .bind(name, role, linkedin_url, is_founder, display_order, image_url, id)
           .run();
       } else {
-        await db.prepare("INSERT INTO experts (name, role, linkedin_url, is_founder, show_on_main, image_url) VALUES (?, ?, ?, ?, ?, ?)")
-          .bind(name, role, linkedin_url, is_founder, show_on_main, image_url)
+        await db.prepare("INSERT INTO experts (name, role, linkedin_url, is_founder, display_order, image_url) VALUES (?, ?, ?, ?, ?, ?)")
+          .bind(name, role, linkedin_url, is_founder, display_order, image_url)
           .run();
       }
       return Astro.redirect("/admin/experts?msg=saved");
@@ -75,7 +75,7 @@ if (Astro.request.method === "POST") {
 }
 
 // Szakértők lekérése
-const { results: experts } = await db.prepare("SELECT * FROM experts ORDER BY created_at ASC").all();
+const { results: experts } = await db.prepare("SELECT * FROM experts ORDER BY is_founder DESC, display_order ASC, created_at ASC").all();
 ---
 
 <html lang="hu">
@@ -136,15 +136,18 @@ const { results: experts } = await db.prepare("SELECT * FROM experts ORDER BY cr
                 <p class="text-[10px] text-slate-500 mt-1 italic">Válassz egy képet a gépedről. (Ha nem választasz újat, a régi megmarad.)</p>
               </div>
 
-              <div class="space-y-3 pt-2">
-                <div class="flex items-center gap-3">
-                  <input type="checkbox" id="is_founder" name="is_founder" value="1" class="w-5 h-5 rounded accent-cyan-400 cursor-pointer" />
-                  <label for="is_founder" class="text-sm font-medium text-cyan-300 cursor-pointer">Alapító (kiemelt kártya a weboldalon)</label>
+              <div class="flex items-center gap-3 pt-2">
+                <input type="checkbox" id="is_founder" name="is_founder" value="1" class="w-5 h-5 rounded accent-cyan-400 cursor-pointer" />
+                <label for="is_founder" class="text-sm font-medium text-cyan-300 cursor-pointer">Alapító (kiemelt kártya a weboldalon)</label>
+              </div>
+
+              <div>
+                <label for="display_order" class="block text-sm font-medium text-slate-300 mb-1">Megjelenési sorrend</label>
+                <div class="flex items-center gap-4">
+                  <input type="range" id="display_order_slider" min="1" max="50" value="10" class="flex-1 accent-cyan-400 cursor-pointer" oninput="document.getElementById('display_order').value = this.value" />
+                  <input type="number" id="display_order" name="display_order" min="1" max="50" value="10" required class="w-20 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center text-white focus:border-cyan-400 focus:outline-none" oninput="document.getElementById('display_order_slider').value = this.value" />
                 </div>
-                <div class="flex items-center gap-3">
-                  <input type="checkbox" id="show_on_main" name="show_on_main" value="1" class="w-5 h-5 rounded accent-emerald-400 cursor-pointer" />
-                  <label for="show_on_main" class="text-sm font-medium text-emerald-300 cursor-pointer">Megjelenjen a főoldalon</label>
-                </div>
+                <p class="text-[10px] text-slate-500 mt-1 italic">Kisebb szám = előrébb jelenik meg a listában. (Alapítók mindig legelöl vannak)</p>
               </div>
 
               <div class="pt-4 flex gap-3">
@@ -178,7 +181,7 @@ const { results: experts } = await db.prepare("SELECT * FROM experts ORDER BY cr
                   <div class="flex items-center gap-2 mb-2 flex-wrap">
                     <h3 class="text-xl font-bold text-white">{expert.name}</h3>
                     {expert.is_founder ? <span class="text-[10px] bg-cyan-400/20 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-400/30 font-bold uppercase tracking-wider">★ Alapító</span> : null}
-                    {expert.show_on_main ? <span class="text-[10px] bg-emerald-400/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-400/30 font-bold uppercase tracking-wider">Főoldal</span> : null}
+                    <span class="text-[10px] bg-slate-500/20 text-slate-400 px-2 py-0.5 rounded-full border border-slate-500/30 font-bold uppercase tracking-wider">Sorrend: {expert.display_order || 10}</span>
                   </div>
                   <p class="text-sm text-slate-400">{expert.role}</p>
                   {expert.linkedin_url && <a href={expert.linkedin_url} target="_blank" class="mt-1 text-xs text-cyan-400 hover:underline">LinkedIn</a>}
@@ -193,7 +196,7 @@ const { results: experts } = await db.prepare("SELECT * FROM experts ORDER BY cr
                     data-role={expert.role}
                     data-linkedin={expert.linkedin_url || ''}
                     data-founder={expert.is_founder ? '1' : '0'}
-                    data-showonmain={expert.show_on_main ? '1' : '0'}
+                    data-displayorder={expert.display_order || '10'}
                     data-image={expert.image_url || ''}
                   >
                     Szerkesztés
@@ -225,7 +228,8 @@ const { results: experts } = await db.prepare("SELECT * FROM experts ORDER BY cr
           document.getElementById('current_image_url').value = btn.dataset.image || '';
           
           document.getElementById('is_founder').checked = btn.dataset.founder === '1';
-          document.getElementById('show_on_main').checked = btn.dataset.showonmain === '1';
+          document.getElementById('display_order').value = btn.dataset.displayorder;
+          document.getElementById('display_order_slider').value = btn.dataset.displayorder;
           
           document.getElementById('reset-btn').classList.remove('hidden');
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -237,6 +241,8 @@ const { results: experts } = await db.prepare("SELECT * FROM experts ORDER BY cr
         document.getElementById('expert-id').value = '';
         document.getElementById('current_image_url').value = '';
         document.getElementById('expert-form').reset();
+        document.getElementById('display_order').value = '10';
+        document.getElementById('display_order_slider').value = '10';
         document.getElementById('reset-btn').classList.add('hidden');
       }
     </script>
