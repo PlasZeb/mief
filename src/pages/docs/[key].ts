@@ -1,14 +1,16 @@
 import type { APIRoute } from 'astro';
 
-export const GET: APIRoute = async ({ params, locals }) => {
+// @ts-ignore
+import { env as cfEnv } from 'cloudflare:workers';
+
+export const GET: APIRoute = async ({ params }) => {
   const { key } = params;
   
   if (!key) {
     return new Response('Not found', { status: 404 });
   }
 
-  // @ts-ignore
-  const env = locals.runtime?.env || (globalThis as any).env;
+  const env = cfEnv as any;
   
   if (!env || !env.DOCUMENTS) {
     return new Response('KV Storage not configured', { status: 500 });
