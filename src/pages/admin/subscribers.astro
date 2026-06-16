@@ -31,6 +31,9 @@ if (Astro.request.method === "POST") {
   } else if (action === "approve") {
     await db.prepare("UPDATE subscribers SET status = 'approved' WHERE id = ?").bind(id).run();
     success = "Feliratkozó jóváhagyva. Mostantól kap értesítéseket.";
+  } else if (action === "suspend") {
+    await db.prepare("UPDATE subscribers SET status = 'pending' WHERE id = ?").bind(id).run();
+    success = "Jóváhagyás visszavonva. A feliratkozó visszakerült a függő listába.";
   } else if (action === "send_digest") {
     const resendApiKey = (env as any).RESEND_API_KEY;
     if (!resendApiKey || resendApiKey === "ide_illeszd_be_az_api_kulcsot") {
@@ -183,6 +186,13 @@ const { results: subscribers } = await db.prepare("SELECT * FROM subscribers ORD
                         <input type="hidden" name="action" value="approve" />
                         <input type="hidden" name="id" value={s.id} />
                         <button type="submit" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition">Jóváhagyás</button>
+                      </form>
+                    )}
+                    {s.status === 'approved' && (
+                      <form method="POST" class="inline">
+                        <input type="hidden" name="action" value="suspend" />
+                        <input type="hidden" name="id" value={s.id} />
+                        <button type="submit" class="text-xs font-bold text-amber-500 hover:text-amber-400 transition" title="Jóváhagyás visszavonása">Visszavonás</button>
                       </form>
                     )}
                     <form method="POST" class="inline">
