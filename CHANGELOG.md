@@ -2,6 +2,14 @@
 
 Minden jelentős változtatás ebben a fájlban kerül rögzítésre.
 
+## [1.6.1] - 2026-06-16
+### Megváltoztatva
+- **Névcsere – Műhelyek/Programok:** A saját MIEF alkalmak (korábban „Eseménytár") átnevezve „Műhelyek"-re a navigációban, főoldalon és az `/esemenyek` oldalon. A külsős programajánló a navigációban „Programok" névvel szerepel (belső neve marad: Programajánló).
+- **Főoldal szekciók:** „Eseménytár" szekciókicker → „Műhelyek"; gomb szövege → „Teljes műhelytár megnyitása".
+
+### Hozzáadva
+- **Programajánló – Előadó mező:** Új „speaker" oszlop a `programs` táblában. Az admin felületen megadható, ki(k) adnak elő MIEF tagok közül. A főoldalon a kártyán 🎤 ikonnal jelenik meg.
+
 ## [1.6.0] - 2026-06-16
 ### Hozzáadva
 - **Feliratkozói rendszer:** Új `subscribers` tábla az adatbázisban (név, email, dátum). Külön, a `registrations` táblától független.
