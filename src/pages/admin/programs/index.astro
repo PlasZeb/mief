@@ -42,27 +42,6 @@ if (Astro.request.method === "POST") {
             .bind(title, url, location, date, notes, speaker, created_by, is_featured)
             .run();
           success = "Program hozzáadva!";
-          
-          const resendApiKey = (env as any).RESEND_API_KEY;
-          if (resendApiKey && resendApiKey !== "ide_illeszd_be_az_api_kulcsot") {
-            try {
-              const { results: subs } = await db.prepare("SELECT email FROM subscribers WHERE status = 'approved'").all();
-              if (subs && subs.length > 0) {
-                const fDate = new Date(date as string).toLocaleDateString("hu-HU", { year: "numeric", month: "long", day: "numeric" });
-                const emailHtml = "<h2>Új program: " + title + "</h2><p>Időpont: " + fDate + "</p>";
-                await fetch("https://api.resend.com/emails", {
-                  method: "POST",
-                  headers: { "Authorization": "Bearer " + resendApiKey, "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    from: "MIEF <noreply@mief.hu>",
-                    to: (subs as any[]).map((s: any) => s.email),
-                    subject: "Új program: " + title,
-                    html: emailHtml
-                  })
-                });
-              }
-            } catch (ee) {}
-          }
         } else {
           await db.prepare("UPDATE programs SET title = ?, url = ?, location = ?, date = ?, notes = ?, speaker = ?, created_by = ?, is_featured = ? WHERE id = ?")
             .bind(title, url, location, date, notes, speaker, created_by, is_featured, id)
