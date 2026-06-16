@@ -1,0 +1,161 @@
+---
+import '../../../styles/global.css';
+
+// @ts-ignore
+import { env } from 'cloudflare:workers';
+
+const session = Astro.cookies.get("programs_session")?.value;
+if (session !== "true") {
+  return Astro.redirect("/admin/programs/login");
+}
+
+const db = (env as any).mief_db;
+
+// Migrációk
+try { await db.prepare("ALTER TABLE programs ADD COLUMN created_by TEXT").run(); } catch (e) {}
+try { await db.prepare("ALTER TABLE programs ADD COLUMN is_featured INTEGER DEFAULT 0").run(); } catch (e) {}
+try { await db.prepare("ALTER TABLE programs ADD COLUMN speaker TEXT").run(); } catch (e) {}
+
+let success = "";
+let error = "";
+const today = new Date().toISOString().split('T')[0];
+
+if (Astro.request.method === "POST") {
+  const data = await Astro.request.formData();
+  const action = data.get("action");
+
+  if (action === "add") {
+    const title = data.get("title");
+    const url = data.get("url");
+    const location = data.get("location");
+    const date = data.get("date");
+    const notes = data.get("notes");
+    const speaker = data.get("speaker");
+    const created_by = data.get("created_by");
+    const is_featured = (data.getAll("is_featured") as string[]).includes("1") ? 1 : 0;
+
+    if (title && date) {
+      try {
+        await db.prepare("INSERT INTO programs (title, url, location, date, notes, speaker, created_by, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+          .bind(title, url, location, date, notes, speaker, created_by, is_featured)
+          .run();
+        success = "Program hozzáadva!";
+
+        const resendApiKey = (env as any).RESEND_API_KEY;
+        if (resendApiKey && resendApiKey !== "ide_illeszd_be_az_api_kulcsot") {
+          try {
+            // Csak a jóváhagyott feliratkozóknak küldünk (ahol status = 'approved')
+            const { results: subs } = await db.prepare("SELECT email FROM subscribers WHERE status = 'approved'").all();
+            if (subs && subs.length > 0) {
+              const fDate = new Date(date as string).toLocaleDateString("hu-HU", { year: "numeric", month: "long", day: "numeric" });
+              await fetch("https://api.resend.com/emails", {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  from: "MIEF <noreply@mief.hu>",
+                  to: (subs as any[]).map((s: any) => s.email),
+                  subject: `Új program: ${title}`,
+                  html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b;">
+                      <h2 style="color: #0891b2;">Új program a MIEF ajánlójában</h2>
+                      <h3>${title}</h3>
+                      <p><strong>Időpont:</strong> ${fDate}</p>
+                      ${location ? `<p><strong>Helyszín:</strong> ${location}</p>` : ""}
+                      ${notes ? `<p>${notes}</p>` : ""}
+                      ${url ? `<p><a href="${url}" style="background:#0891b2;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;">Részletek megtekintése</a></p>` : ""}
+                    </div>
+                  `
+                })
+              });
+              success = "Program és értesítő elküldve!";
+            }
+          } catch (ee) {}
+        }
+      } catch (e) { error = "Hiba!"; }
+    }
+  }
+
+  if (action === "delete") {
+    const id = data.get("id");
+    await db.prepare("DELETE FROM programs WHERE id = ?").bind(id).run();
+    success = "Törölve.";
+  }
+}
+
+const { results: programs } = await db.prepare("SELECT * FROM programs ORDER BY date ASC").all();
+---
+
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Programok | MIEF Admin</title>
+  </head>
+  <body class="min-h-screen bg-slate-900 text-slate-100 p-6 sm:p-12">
+    <div class="mx-auto max-w-4xl">
+      <header class="flex items-center justify-between mb-12">
+        <div>
+          <h1 class="text-3xl font-bold text-white">Programok kezelése</h1>
+          <p class="text-slate-400 mt-1">Külsős események és konferenciák</p>
+        </div>
+        <a href="/" class="text-sm text-slate-400 hover:text-white transition">Főoldal</a>
+      </header>
+
+      <section class="bg-slate-800 border border-white/10 rounded-3xl p-8 mb-12">
+        <h2 class="text-xl font-bold text-white mb-6">Új program hozzáadása</h2>
+        {success && <p class="mb-6 p-4 bg-emerald-500/10 text-emerald-400 rounded-xl text-sm border border-emerald-500/20">{success}</p>}
+        {error && <p class="mb-6 p-4 bg-red-500/10 text-red-400 rounded-xl text-sm border border-red-500/20">{error}</p>}
+        <form method="POST" class="grid gap-6 md:grid-cols-2">
+          <input type="hidden" name="action" value="add" />
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-slate-400 mb-2">Esemény címe *</label>
+            <input name="title" required class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Dátum *</label>
+            <input name="date" type="date" required class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2 text-emerald-400">Felvivő neve *</label>
+            <input name="created_by" required class="w-full bg-slate-900 border border-emerald-400/20 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Helyszín</label>
+            <input name="location" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Link</label>
+            <input name="url" type="url" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-slate-400 mb-2">Megjegyzés</label>
+            <input name="notes" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 outline-none" />
+          </div>
+          <div class="md:col-span-2">
+            <button type="submit" class="w-full bg-emerald-400 hover:bg-emerald-300 text-slate-900 font-bold py-4 rounded-xl transition shadow-lg shadow-emerald-500/20">
+              Program mentése és értesítés küldése
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <div class="space-y-4">
+        <h2 class="text-xl font-bold text-white mb-6">Már rögzített programok</h2>
+        {programs.length === 0 && <p class="text-slate-500 italic">Még nincsenek programok.</p>}
+        {(programs as any[]).map((p) => (
+          <div class="bg-slate-800/50 border border-white/5 rounded-2xl p-6 flex justify-between items-center group hover:border-emerald-400/30 transition">
+            <div>
+              <h3 class="font-bold text-white text-lg">{p.title}</h3>
+              <p class="text-sm text-slate-400">📅 {p.date} {p.location ? `| 📍 ${p.location}` : ''}</p>
+            </div>
+            <form method="POST">
+              <input type="hidden" name="action" value="delete" />
+              <input type="hidden" name="id" value={p.id} />
+              <button type="submit" class="text-slate-500 hover:text-red-400 transition" onclick="return confirm('Törlöd?')">Törlés</button>
+            </form>
+          </div>
+        ))}
+      </div>
+    </div>
+  </body>
+</html>
