@@ -57,11 +57,11 @@ if (db) {
 }
 
 // Szakértők lekérése
-type ExpertItem = { id: number; name: string; role: string; linkedin_url?: string; is_founder?: number; show_on_main?: number; image_url?: string; };
+type ExpertItem = { id: number; name: string; role: string; linkedin_url?: string; is_founder?: number; display_order?: number; image_url?: string; };
 let experts: ExpertItem[] = [];
 if (db) {
   try {
-    const result = await db.prepare("SELECT * FROM experts WHERE show_on_main = 1 ORDER BY is_founder DESC, created_at ASC LIMIT 6").all();
+    const result = await db.prepare("SELECT * FROM experts ORDER BY is_founder DESC, display_order ASC, created_at ASC LIMIT 6").all();
     experts = (result.results || []) as ExpertItem[];
   } catch (e) {
     console.error("Experts query error:", e);
