@@ -30,6 +30,78 @@ if (Astro.request.method === "POST") {
   } else if (action === "approve") {
     await db.prepare("UPDATE subscribers SET status = 'approved' WHERE id = ?").bind(id).run();
     success = "Feliratkozó jóváhagyva. Mostantól kap értesítéseket.";
+  } else if (action === "send_digest") {
+    const resendApiKey = (env as any).RESEND_API_KEY;
+    if (!resendApiKey || resendApiKey === "ide_illeszd_be_az_api_kulcsot") {
+       error = "Hiba: A Resend API kulcs nincs beállítva a környezeti változókban!";
+    } else {
+       const today = new Date().toISOString().split('T')[0];
+       const { results: events } = await db.prepare("SELECT * FROM events WHERE date >= ? ORDER BY date ASC").bind(today).all();
+       const { results: programs } = await db.prepare("SELECT * FROM programs WHERE date >= ? ORDER BY date ASC").bind(today).all();
+       const { results: subs } = await db.prepare("SELECT email FROM subscribers WHERE status = 'approved'").all();
+       
+       if (!subs || subs.length === 0) {
+         error = "Nincs egyetlen jóváhagyott feliratkozó sem, akinek küldhetnénk.";
+       } else if (events.length === 0 && programs.length === 0) {
+         error = "Nincsenek jövőbeli események vagy programok az adatbázisban.";
+       } else {
+         let html = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b;">`;
+         html += `<h2 style="color: #0891b2; text-align: center;">Aktuális MIEF Műhelyek és Programajánlók</h2>`;
+         html += `<p style="font-size: 15px; line-height: 1.6;">Kedves Feliratkozó!</p><p style="font-size: 15px; line-height: 1.6;">Íme a legfrissebb közelgő saját eseményeink és szakmai ajánlónk:</p>`;
+         
+         if (events.length > 0) {
+            html += `<h3 style="border-bottom: 2px solid #0891b2; padding-bottom: 5px; margin-top: 30px; color: #0f172a;">Saját Műhelymunkáink</h3>`;
+            events.forEach(e => {
+               const fDate = new Date(e.date).toLocaleDateString("hu-HU", { year: "numeric", month: "long", day: "numeric" });
+               html += `<div style="margin-bottom: 24px; padding: 16px; background-color: #f8fafc; border-radius: 8px;">`;
+               html += `<h4 style="margin: 0 0 8px 0; color: #0f172a; font-size: 18px;">${e.title}</h4>`;
+               html += `<p style="margin: 0 0 8px 0; font-size: 14px; color: #0891b2; font-weight: bold;">📅 ${fDate} ${e.location_url ? `| 📍 ${e.location_url}` : ''}</p>`;
+               html += `<p style="margin: 0 0 12px 0; font-size: 14px; color: #334155; line-height: 1.5;">${e.description}</p>`;
+               if (e.join_url) html += `<a href="${e.join_url}" style="display: inline-block; background-color: #0891b2; color: #ffffff; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px;">Csatlakozás &rarr;</a>`;
+               html += `</div>`;
+            });
+         }
+         
+         if (programs.length > 0) {
+            html += `<h3 style="border-bottom: 2px solid #10b981; padding-bottom: 5px; margin-top: 30px; color: #0f172a;">Ajánlott Külsős Programok</h3>`;
+            programs.forEach(p => {
+               const fDate = new Date(p.date).toLocaleDateString("hu-HU", { year: "numeric", month: "long", day: "numeric" });
+               html += `<div style="margin-bottom: 24px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px;">`;
+               html += `<h4 style="margin: 0 0 8px 0; color: #0f172a; font-size: 16px;">${p.title}</h4>`;
+               html += `<p style="margin: 0 0 4px 0; font-size: 13px; color: #10b981; font-weight: bold;">📅 ${fDate} ${p.location ? `| 📍 ${p.location}` : ''}</p>`;
+               if (p.speaker) html += `<p style="margin: 0 0 4px 0; font-size: 13px; color: #64748b;">🎤 Előadó: <strong>${p.speaker}</strong></p>`;
+               if (p.notes) html += `<p style="margin: 8px 0 12px 0; font-size: 14px; color: #475569; font-style: italic;">"${p.notes}"</p>`;
+               if (p.url) html += `<a href="${p.url}" style="display: inline-block; color: #10b981; text-decoration: none; font-weight: bold; font-size: 13px;">Részletek megtekintése &rarr;</a>`;
+               html += `</div>`;
+            });
+         }
+         
+         html += `<hr style="border-color:#e2e8f0; margin-top: 40px; margin-bottom: 20px;" />`;
+         html += `<p style="color:#94a3b8; font-size: 12px; text-align: center; line-height: 1.5;">Ezt az emailt a MIEF hírlevelére való feliratkozásod miatt kaptad. Ha nem szeretnél több értesítőt kapni, látogass el a <a href="https://mief.hu/unsubscribe" style="color: #94a3b8; text-decoration: underline;">leiratkozási oldalra</a>.</p>`;
+         html += `</div>`;
+
+         try {
+            const response = await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Authorization": "Bearer " + resendApiKey, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                from: "MIEF <noreply@mief.hu>",
+                to: subs.map((s: any) => s.email),
+                subject: "MIEF: Aktuális műhelyek és ajánlott programok",
+                html: html
+              })
+            });
+            
+            if (response.ok) {
+               success = `Köremail sikeresen elküldve ${subs.length} jóváhagyott feliratkozónak!`;
+            } else {
+               error = "Hiba történt a Resend felé történő küldéskor.";
+            }
+         } catch (ee) {
+            error = "Hálózati hiba a levélküldés során.";
+         }
+       }
+    }
   } else if (action === "logout") {
     Astro.cookies.delete("admin_session");
     return Astro.redirect("/admin/login");
@@ -62,14 +134,20 @@ const { results: subscribers } = await db.prepare("SELECT * FROM subscribers ORD
         </form>
       </header>
 
-      <div class="flex items-center justify-between mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
         <div>
           <h1 class="text-3xl font-bold text-white">Feliratkozók kezelése</h1>
           <p class="text-slate-400 mt-1">Jóváhagyás és email lista kezelése ({subscribers.length} fő)</p>
         </div>
+        <form method="POST" onsubmit="return confirm('Biztosan kiküldöd a köremailt a jóváhagyott feliratkozóknak a közelgő műhelyekkel és programokkal?')">
+          <button name="action" value="send_digest" class="rounded-xl bg-cyan-400 px-6 py-3 text-sm font-bold text-slate-900 shadow-lg shadow-cyan-500/20 transition hover:bg-cyan-300 hover:scale-105 active:scale-95">
+            Műhely & Program Köremail Küldése
+          </button>
+        </form>
       </div>
 
       {success && <p class="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-sm">{success}</p>}
+      {error && <p class="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm">{error}</p>}
 
       {subscribers.length === 0 ? (
         <div class="text-center py-24 text-slate-500 italic">Még nincs feliratkozó.</div>
