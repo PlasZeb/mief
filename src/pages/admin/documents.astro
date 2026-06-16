@@ -1,0 +1,224 @@
+---
+import '../../styles/global.css';
+
+// @ts-ignore
+import { env } from 'cloudflare:workers';
+
+const session = Astro.cookies.get("admin_session")?.value;
+if (session !== "true") {
+  return Astro.redirect("/admin/login");
+}
+
+const db = (env as any).mief_db;
+
+// Tábla migrációja
+try {
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS documents (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      type TEXT NOT NULL,
+      url TEXT NOT NULL,
+      published_at DATE NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+} catch (e) { console.error(e); }
+
+let success = "";
+let error = "";
+
+// Műveletek kezelése
+if (Astro.request.method === "POST") {
+  const data = await Astro.request.formData();
+  const action = data.get("action");
+
+  if (action === "save") {
+    const id = data.get("id");
+    const title = data.get("title");
+    const type = data.get("type");
+    const url = data.get("url");
+    const published_at = data.get("published_at");
+
+    if (title && type && url && published_at) {
+      try {
+        if (id) {
+          await db.prepare("UPDATE documents SET title = ?, type = ?, url = ?, published_at = ? WHERE id = ?")
+            .bind(title, type, url, published_at, id).run();
+          success = "Dokumentum sikeresen módosítva.";
+        } else {
+          await db.prepare("INSERT INTO documents (title, type, url, published_at) VALUES (?, ?, ?, ?)")
+            .bind(title, type, url, published_at).run();
+          success = "Dokumentum sikeresen hozzáadva.";
+        }
+      } catch (e) {
+        error = "Hiba történt a mentés során.";
+      }
+    } else {
+      error = "Minden mező kitöltése kötelező!";
+    }
+  } else if (action === "delete") {
+    const id = data.get("id");
+    try {
+      await db.prepare("DELETE FROM documents WHERE id = ?").bind(id).run();
+      success = "Dokumentum törölve.";
+    } catch (e) { error = "Hiba a törléskor."; }
+  } else if (action === "logout") {
+    Astro.cookies.delete("admin_session");
+    return Astro.redirect("/admin/login");
+  }
+}
+
+const { results: documents } = await db.prepare("SELECT * FROM documents ORDER BY published_at DESC").all();
+---
+
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dokumentumok | MIEF Admin</title>
+  </head>
+  <body class="min-h-screen bg-slate-900 text-slate-100 p-6 sm:p-12">
+    <div class="mx-auto max-w-6xl">
+      <header class="flex items-center justify-between mb-12">
+        <div class="flex items-center gap-6">
+          <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 shadow-lg shadow-cyan-500/20"></div>
+          <nav class="flex gap-6 overflow-x-auto pb-2">
+            <a href="/admin" class="text-sm font-medium text-slate-400 hover:text-white transition">Események</a>
+            <a href="/admin/programs" class="text-sm font-medium text-slate-400 hover:text-white transition">Programok</a>
+            <a href="/admin/members" class="text-sm font-medium text-slate-400 hover:text-white transition">Tagok</a>
+            <a href="/admin/experts" class="text-sm font-medium text-slate-400 hover:text-white transition">Szakértők</a>
+            <a href="/admin/documents" class="text-sm font-bold text-cyan-400 border-b-2 border-cyan-400 pb-1">Dokumentumok</a>
+            <a href="/admin/subscribers" class="text-sm font-medium text-slate-400 hover:text-white transition">Feliratkozók</a>
+          </nav>
+        </div>
+        <form method="POST">
+          <button name="action" value="logout" class="text-sm font-medium text-slate-400 hover:text-white transition">Kijelentkezés</button>
+        </form>
+      </header>
+
+      <div class="grid gap-12 lg:grid-cols-3">
+        {/* Form */}
+        <div class="lg:col-span-1">
+          <div class="sticky top-24 bg-slate-800 border border-white/10 rounded-3xl p-8 shadow-xl">
+            <h2 class="text-xl font-bold text-white mb-6" id="form-title">Új dokumentum</h2>
+            
+            {success && <p class="mb-4 p-3 bg-emerald-500/10 text-emerald-400 rounded-xl text-xs">{success}</p>}
+            {error && <p class="mb-4 p-3 bg-red-500/10 text-red-400 rounded-xl text-xs">{error}</p>}
+            
+            <form method="POST" id="doc-form" class="space-y-4">
+              <input type="hidden" name="action" value="save" />
+              <input type="hidden" name="id" id="doc-id" />
+              
+              <div>
+                <label for="title" class="block text-sm font-medium text-slate-300 mb-1">Cím</label>
+                <input type="text" id="title" name="title" required class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-cyan-400 focus:outline-none" />
+              </div>
+
+              <div>
+                <label for="type" class="block text-sm font-medium text-slate-300 mb-1">Kategória</label>
+                <select id="type" name="type" required class="w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-2 text-white focus:border-cyan-400 focus:outline-none">
+                  <option value="brief">MIEF Brief (Elemzés)</option>
+                  <option value="ajanlas">Szakmai Ajánlás</option>
+                  <option value="allasfoglalas">Állásfoglalás</option>
+                  <option value="egyeb">Egyéb anyag</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="url" class="block text-sm font-medium text-slate-300 mb-1">PDF Link (URL)</label>
+                <input type="url" id="url" name="url" required class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-cyan-400 focus:outline-none" placeholder="https://..." />
+                <p class="text-[10px] text-slate-500 mt-1 italic">Töltsd fel a fájlt egy tárhelyre (pl. Google Drive) és ide másold a publikus linket.</p>
+              </div>
+
+              <div>
+                <label for="published_at" class="block text-sm font-medium text-slate-300 mb-1">Publikálás dátuma</label>
+                <input type="date" id="published_at" name="published_at" required class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-cyan-400 focus:outline-none" />
+              </div>
+
+              <div class="pt-4 flex gap-3">
+                <button type="submit" class="flex-1 rounded-xl bg-cyan-400 py-3 text-sm font-bold text-slate-900 hover:bg-cyan-300 transition">Mentés</button>
+                <button type="button" onclick="resetForm()" id="reset-btn" class="hidden flex-1 rounded-xl border border-white/10 py-3 text-sm font-bold text-white hover:bg-white/5 transition">Mégse</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {/* List */}
+        <div class="lg:col-span-2">
+          <div class="space-y-4">
+            {documents.length === 0 && (
+              <div class="text-center py-20 border-2 border-dashed border-white/5 rounded-3xl">
+                <p class="text-slate-500">Nincsenek még feltöltött dokumentumok.</p>
+              </div>
+            )}
+            
+            {(documents as any[]).map((doc) => (
+              <div class="bg-slate-800 border border-white/10 rounded-2xl p-5 shadow-lg flex flex-col sm:flex-row gap-4 justify-between items-center group hover:border-cyan-500/30 transition">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <span class={`text-[10px] px-2 py-0.5 rounded-full border font-bold uppercase tracking-wider ${
+                      doc.type === 'brief' ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' :
+                      doc.type === 'ajanlas' ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30' :
+                      doc.type === 'allasfoglalas' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
+                      'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                    }`}>
+                      {doc.type}
+                    </span>
+                    <span class="text-xs text-slate-400">📅 {doc.published_at}</span>
+                  </div>
+                  <h3 class="font-bold text-white text-lg">{doc.title}</h3>
+                  <a href={doc.url} target="_blank" class="text-sm text-cyan-400 hover:underline mt-1 inline-block">Fájl megtekintése &rarr;</a>
+                </div>
+                
+                <div class="flex gap-2 w-full sm:w-auto">
+                  <button 
+                    type="button"
+                    class="edit-btn flex-1 sm:w-auto px-4 rounded-lg border border-white/10 py-2 text-xs font-bold text-white hover:bg-white/5 transition"
+                    data-id={doc.id}
+                    data-title={doc.title}
+                    data-type={doc.type}
+                    data-url={doc.url}
+                    data-date={doc.published_at}
+                  >
+                    Szerkesztés
+                  </button>
+                  <form method="POST" onsubmit="return confirm('Biztosan törlöd?')" class="flex-1 sm:w-auto">
+                    <input type="hidden" name="action" value="delete" />
+                    <input type="hidden" name="id" value={doc.id} />
+                    <button class="w-full px-4 rounded-lg border border-red-500/20 py-2 text-xs font-bold text-red-400 hover:bg-red-500/10 transition">
+                      Törlés
+                    </button>
+                  </form>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script is:inline>
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('edit-btn')) {
+          const btn = e.target;
+          document.getElementById('form-title').innerText = 'Dokumentum szerkesztése';
+          document.getElementById('doc-id').value = btn.dataset.id;
+          document.getElementById('title').value = btn.dataset.title;
+          document.getElementById('type').value = btn.dataset.type;
+          document.getElementById('url').value = btn.dataset.url;
+          document.getElementById('published_at').value = btn.dataset.date;
+          document.getElementById('reset-btn').classList.remove('hidden');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+
+      function resetForm() {
+        document.getElementById('form-title').innerText = 'Új dokumentum';
+        document.getElementById('doc-id').value = '';
+        document.getElementById('doc-form').reset();
+        document.getElementById('reset-btn').classList.add('hidden');
+      }
+    </script>
+  </body>
+</html>
