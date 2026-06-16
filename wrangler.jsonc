@@ -15,6 +15,11 @@
 		{
 			"binding": "SESSION",
 			"id": "6289f9b0a9264fb4864822d26fe9c8e6"
+		},
+		{
+			"binding": "DOCUMENTS",
+			"id": "c5abef8b0bb24a97965cf87ce0c498e4",
+			"remote": true
 		}
 	],
 	"images": {

@@ -37,11 +37,19 @@ if (Astro.request.method === "POST") {
     const id = data.get("id");
     const title = data.get("title");
     const type = data.get("type");
-    const url = data.get("url");
+    let url = data.get("url") as string;
     const published_at = data.get("published_at");
+    const pdfFile = data.get("pdf_file") as File;
 
-    if (title && type && url && published_at) {
+    if (title && type && published_at && (url || (pdfFile && pdfFile.size > 0))) {
       try {
+        if (pdfFile && pdfFile.size > 0) {
+          const fileKey = crypto.randomUUID() + '.pdf';
+          const buffer = await pdfFile.arrayBuffer();
+          await env.DOCUMENTS.put(fileKey, buffer);
+          url = `/docs/${fileKey}`;
+        }
+
         if (id) {
           await db.prepare("UPDATE documents SET title = ?, type = ?, url = ?, published_at = ? WHERE id = ?")
             .bind(title, type, url, published_at, id).run();
@@ -53,9 +61,10 @@ if (Astro.request.method === "POST") {
         }
       } catch (e) {
         error = "Hiba történt a mentés során.";
+        console.error(e);
       }
     } else {
-      error = "Minden mező kitöltése kötelező!";
+      error = "Cím, kategória, dátum, és fájl (vagy link) megadása kötelező!";
     }
   } else if (action === "delete") {
     const id = data.get("id");
@@ -106,7 +115,7 @@ const { results: documents } = await db.prepare("SELECT * FROM documents ORDER B
             {success && <p class="mb-4 p-3 bg-emerald-500/10 text-emerald-400 rounded-xl text-xs">{success}</p>}
             {error && <p class="mb-4 p-3 bg-red-500/10 text-red-400 rounded-xl text-xs">{error}</p>}
             
-            <form method="POST" id="doc-form" class="space-y-4">
+            <form method="POST" id="doc-form" class="space-y-4" enctype="multipart/form-data">
               <input type="hidden" name="action" value="save" />
               <input type="hidden" name="id" id="doc-id" />
               
@@ -125,10 +134,21 @@ const { results: documents } = await db.prepare("SELECT * FROM documents ORDER B
                 </select>
               </div>
 
-              <div>
-                <label for="url" class="block text-sm font-medium text-slate-300 mb-1">PDF Link (URL)</label>
-                <input type="url" id="url" name="url" required class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-cyan-400 focus:outline-none" placeholder="https://..." />
-                <p class="text-[10px] text-slate-500 mt-1 italic">Töltsd fel a fájlt egy tárhelyre (pl. Google Drive) és ide másold a publikus linket.</p>
+              <div class="border border-cyan-500/30 bg-cyan-500/5 p-4 rounded-xl space-y-3">
+                <p class="text-sm font-bold text-cyan-400">PDF feltöltése (Válassz egyet a két módszer közül)</p>
+                <div>
+                  <label for="pdf_file" class="block text-xs font-medium text-slate-400 mb-1">1. Fájl feltöltése a szerverre (max 25MB)</label>
+                  <input type="file" id="pdf_file" name="pdf_file" accept=".pdf" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-500/20 file:text-cyan-400 hover:file:bg-cyan-500/30" />
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="h-px bg-white/10 flex-1"></div>
+                  <span class="text-xs text-slate-500 font-bold uppercase">vagy</span>
+                  <div class="h-px bg-white/10 flex-1"></div>
+                </div>
+                <div>
+                  <label for="url" class="block text-xs font-medium text-slate-400 mb-1">2. Külső link megadása (pl. Google Drive)</label>
+                  <input type="url" id="url" name="url" class="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-2 text-white focus:border-cyan-400 focus:outline-none" placeholder="https://..." />
+                </div>
               </div>
 
               <div>
