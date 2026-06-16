@@ -10,5 +10,14 @@
 			"database_name": "mief-db",
 			"database_id": "8203ce7a-a9cb-4968-bd12-b78cdd75c970"
 		}
-	]
+	],
+	"kv_namespaces": [
+		{
+			"binding": "SESSION",
+			"id": "6289f9b0a9264fb4864822d26fe9c8e6"
+		}
+	],
+	"images": {
+		"binding": "IMAGES"
+	}
 }
