@@ -2,6 +2,14 @@
 
 Minden jelentős változtatás ebben a fájlban kerül rögzítésre.
 
+## [1.6.0] - 2026-06-16
+### Hozzáadva
+- **Feliratkozói rendszer:** Új `subscribers` tábla az adatbázisban (név, email, dátum). Külön, a `registrations` táblától független.
+- **Feliratkozó form:** Az Eseménytár oldal (`/esemenyek`) alján megjelent egy feliratkozási űrlap, ahol névvel és email címmel lehet feliratkozni az új esemény-értesítőkre.
+- **Admin: Feliratkozók menüpont:** Új `/admin/subscribers` oldal, ahol látható az összes feliratkozó név/email/dátum adatokkal, egyenként törölhetők.
+- **Email értesítés (Resend integráció):** Új program admin felvételénél automatikusan email megy ki az összes feliratkozónak a Resend API-n keresztül. A `RESEND_API_KEY` titok Cloudflare Workers Secrets-ben tárolva.
+- **Admin navigáció:** „Feliratkozók" link megjelent minden admin oldalon (Események, Tagok, Szakértők).
+
 ## [1.5.2] - 2026-06-09
 ### Megváltoztatva
 - **Programok Admin:** Az automatikus törlés helyett vizuális kiemelés. A lejárt események (dátum alapján) piros háttérrel és "Lejárt" felirattal jelennek meg, manuálisan törölhetők.

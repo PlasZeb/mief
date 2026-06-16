@@ -33,6 +33,16 @@ Az oldal admin felülete a `/admin` útvonalon érhető el.
 - **Események:** Új alkalmak felvitele, szerkesztése, törlése. A rendszer automatikusan kezeli a "Lezajlott/Tervezett" státuszt.
 - **Tagok:** A jelentkezők listájának megtekintése és exportálása (manuálisan).
 - **Szakértők:** A főoldali nyilvános szakértői lista kezelése.
+- **Feliratkozók** (`/admin/subscribers`)**:** Az esemény-értesítőre feliratkozók listája (név + email). Törölhetők egyenként.
+
+## 📧 Email integráció (Resend)
+- Szolgáltató: [resend.com](https://resend.com)
+- Trigger: új esemény mentésekor a `/admin/programs` felületen
+- Címzettek: a `subscribers` tábla összes emailje
+- API kulcs tárolása: Cloudflare Workers Secret (`RESEND_API_KEY`)
+  - Feltöltés: `npx wrangler secret put RESEND_API_KEY`
+  - Lokális fejlesztéshez: `.dev.vars` fájlba `RESEND_API_KEY=re_...`
+- Feladó: `MIEF <noreply@mief.hu>` (domain hitelesítés szükséges a Resend dashboardon)
 
 ## 💡 Javaslatok a jövőre
 1. **E-mail küldés:** Érdemes integrálni a [Resend](https://resend.com) szolgáltatást, hogy a regisztrációkról azonnali értesítést kapj.

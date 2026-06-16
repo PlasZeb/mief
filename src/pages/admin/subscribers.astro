@@ -1,0 +1,110 @@
+---
+import '../../styles/global.css';
+
+// @ts-ignore
+import { env } from 'cloudflare:workers';
+
+const session = Astro.cookies.get("admin_session")?.value;
+if (session !== "true") {
+  return Astro.redirect("/admin/login");
+}
+
+const db = (env as any).mief_db;
+
+// Tábla migrációja (ha még nincs)
+try {
+  await db.prepare("CREATE TABLE IF NOT EXISTS subscribers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, subscribed_at DATETIME DEFAULT CURRENT_TIMESTAMP)").run();
+} catch (e) { /* már létezik */ }
+
+let success = "";
+
+// Törlés kezelése
+if (Astro.request.method === "POST") {
+  const data = await Astro.request.formData();
+  const action = data.get("action");
+  if (action === "delete") {
+    const id = data.get("id");
+    await db.prepare("DELETE FROM subscribers WHERE id = ?").bind(id).run();
+    success = "Feliratkozó törölve.";
+  } else if (action === "logout") {
+    Astro.cookies.delete("admin_session");
+    return Astro.redirect("/admin/login");
+  }
+}
+
+const { results: subscribers } = await db.prepare("SELECT * FROM subscribers ORDER BY subscribed_at DESC").all();
+---
+
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feliratkozók | MIEF Admin</title>
+  </head>
+  <body class="min-h-screen bg-slate-900 text-slate-100 p-6 sm:p-12">
+    <div class="mx-auto max-w-4xl">
+      <header class="flex items-center justify-between mb-12">
+        <div class="flex items-center gap-6">
+          <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 shadow-lg shadow-cyan-500/20"></div>
+          <nav class="flex gap-6">
+            <a href="/admin" class="text-sm font-medium text-slate-400 hover:text-white transition">Események</a>
+            <a href="/admin/members" class="text-sm font-medium text-slate-400 hover:text-white transition">Tagok</a>
+            <a href="/admin/experts" class="text-sm font-medium text-slate-400 hover:text-white transition">Szakértők</a>
+            <a href="/admin/subscribers" class="text-sm font-bold text-cyan-400 border-b-2 border-cyan-400 pb-1">Feliratkozók</a>
+          </nav>
+        </div>
+        <form method="POST">
+          <button name="action" value="logout" class="text-sm font-medium text-slate-400 hover:text-white transition">Kijelentkezés</button>
+        </form>
+      </header>
+
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-3xl font-bold text-white">Feliratkozók</h1>
+          <p class="text-slate-400 mt-1">Akik értesítést kértek az új eseményekről ({subscribers.length} fő)</p>
+        </div>
+      </div>
+
+      {success && <p class="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-sm">{success}</p>}
+
+      {subscribers.length === 0 ? (
+        <div class="text-center py-24 text-slate-500 italic">Még nincs feliratkozó.</div>
+      ) : (
+        <div class="bg-slate-800 border border-white/10 rounded-3xl overflow-hidden shadow-xl">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-white/10 text-slate-400 text-left">
+                <th class="px-6 py-4 font-medium">Név</th>
+                <th class="px-6 py-4 font-medium">Email cím</th>
+                <th class="px-6 py-4 font-medium">Feliratkozás dátuma</th>
+                <th class="px-6 py-4 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {(subscribers as any[]).map((s: any) => (
+                <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
+                  <td class="px-6 py-4 text-white font-medium">{s.name}</td>
+                  <td class="px-6 py-4 text-slate-300">{s.email}</td>
+                  <td class="px-6 py-4 text-slate-500 text-xs">{s.subscribed_at}</td>
+                  <td class="px-6 py-4 text-right">
+                    <form method="POST" class="inline">
+                      <input type="hidden" name="action" value="delete" />
+                      <input type="hidden" name="id" value={s.id} />
+                      <button
+                        type="submit"
+                        onclick="return confirm('Biztosan törlöd a feliratkozót?')"
+                        class="text-xs text-slate-500 hover:text-red-400 transition"
+                      >
+                        Törlés
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  </body>
+</html>
