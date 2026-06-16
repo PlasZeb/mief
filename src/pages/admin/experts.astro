@@ -38,7 +38,7 @@ if (Astro.request.method === "POST") {
     let image_url = data.get("current_image_url") as string || null;
 
     try {
-      if (imageFile && imageFile.size > 0) {
+      if (imageFile && imageFile.name && imageFile.size > 0) {
         const fileExt = imageFile.name.split('.').pop() || 'jpg';
         const fileKey = crypto.randomUUID() + '.' + fileExt;
         const buffer = await imageFile.arrayBuffer();
