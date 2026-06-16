@@ -57,10 +57,11 @@ if (db) {
 }
 
 // Szakértők lekérése
+type ExpertItem = { id: number; name: string; role: string; linkedin_url?: string; is_founder?: number; show_on_main?: number; image_url?: string; };
 let experts: ExpertItem[] = [];
 if (db) {
   try {
-    const result = await db.prepare("SELECT * FROM experts ORDER BY is_founder DESC, created_at ASC").all();
+    const result = await db.prepare("SELECT * FROM experts WHERE show_on_main = 1 ORDER BY is_founder DESC, created_at ASC LIMIT 6").all();
     experts = (result.results || []) as ExpertItem[];
   } catch (e) {
     console.error("Experts query error:", e);
@@ -390,9 +391,18 @@ if (Astro.request.method === "POST") {
                   )}
                   <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {regularExperts.slice(0, 5).map((expert) => (
-                      <div class="rounded-2xl border border-white/5 bg-white/[0.02] p-6 hover:border-white/10 transition group">
-                        <h5 class="font-bold text-white group-hover:text-cyan-400 transition">{expert.name}</h5>
-                        <p class="mt-2 text-sm text-slate-300 leading-normal">{expert.role}</p>
+                      <div class="rounded-2xl border border-white/5 bg-white/[0.02] p-6 hover:border-white/10 transition group flex items-start gap-4">
+                        {expert.image_url ? (
+                          <img src={expert.image_url} alt={expert.name} class="w-12 h-12 rounded-full object-cover border border-white/10 shrink-0" />
+                        ) : (
+                          <div class="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                            <svg class="w-6 h-6 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                          </div>
+                        )}
+                        <div>
+                          <h5 class="font-bold text-white group-hover:text-cyan-400 transition">{expert.name}</h5>
+                          <p class="mt-1 text-sm text-slate-400 leading-normal line-clamp-2">{expert.role}</p>
+                        </div>
                       </div>
                     ))}
                     <a href="/szakertok" class="rounded-2xl border border-dashed border-cyan-400/20 bg-cyan-400/5 p-6 flex items-center justify-center group transition hover:bg-cyan-400/10">
@@ -775,4 +785,6 @@ if (Astro.request.method === "POST") {
 
     <Footer />
   </body>
+</html>
+ </body>
 </html>
