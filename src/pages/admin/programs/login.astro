@@ -9,7 +9,7 @@ let error = "";
 if (Astro.request.method === "POST") {
   const data = await Astro.request.formData();
   const password = data.get("password");
-  const envPassword = (env as any).PROGRAMS_PASSWORD;
+  const envPassword = (env as any).PROGRAMS_PASSWORD || "miefprogram2026";
 
   if (password === envPassword) {
     // Session cookie a külsős program adminnak
