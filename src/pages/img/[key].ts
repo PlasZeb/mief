@@ -7,30 +7,41 @@ export const GET: APIRoute = async ({ params, locals }) => {
   const { key } = params;
   
   if (!key) {
-    return new Response('Missing key', { status: 400 });
+    return new Response('Not found', { status: 404 });
   }
 
-  // Megpróbáljuk több helyről is megszerezni az env-et a legnagyobb kompatibilitás érdekében
-  const env = (locals as any)?.runtime?.env || cfEnv;
+  // Megpróbáljuk több helyről is megszerezni az EXPERT_IMAGES bindingot
+  // 1. Astro standard Cloudflare runtime env
+  // 2. Astro locals (közvetlen)
+  // 3. cloudflare:workers import
+  // 4. Globális változó (legacy Workers)
   
-  if (!env || !env.EXPERT_IMAGES) {
-    console.error("EXPERT_IMAGES KV binding missing", { 
-      hasLocals: !!locals, 
+  const runtimeEnv = (locals as any)?.runtime?.env;
+  const directLocals = (locals as any)?.EXPERT_IMAGES ? locals as any : null;
+  const env = runtimeEnv || directLocals || cfEnv || (typeof globalThis !== 'undefined' ? globalThis : {});
+  
+  const kv = env.EXPERT_IMAGES;
+  
+  if (!kv) {
+    const diagnostic = {
+      hasLocals: !!locals,
       hasRuntime: !!(locals as any)?.runtime,
+      hasRuntimeEnv: !!runtimeEnv,
       hasCfEnv: !!cfEnv,
-      keys: env ? Object.keys(env) : []
-    });
-    return new Response('Storage configuration error', { status: 500 });
+      envKeys: Object.keys(env)
+    };
+    console.error("EXPERT_IMAGES KV binding not found", diagnostic);
+    return new Response(`Storage configuration error. Available: ${diagnostic.envKeys.join(', ')}`, { status: 500 });
   }
 
   try {
-    const imageBuffer = await env.EXPERT_IMAGES.get(key, 'arrayBuffer');
+    const imageBuffer = await kv.get(key, { type: 'arrayBuffer' });
     
     if (!imageBuffer) {
-      return new Response('Image not found', { status: 404 });
+      return new Response(`Image not found in KV: ${key}`, { status: 404 });
     }
 
-    // Case-insensitive content type detection
+    // Determine content type based on extension (case-insensitive)
     const lowerKey = key.toLowerCase();
     let contentType = 'image/jpeg';
     if (lowerKey.endsWith('.png')) contentType = 'image/png';
