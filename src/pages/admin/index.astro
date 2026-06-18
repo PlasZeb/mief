@@ -2,15 +2,14 @@
 import '../../styles/global.css';
 
 // @ts-ignore
-import { env as cfEnv } from 'cloudflare:workers';
+import { env } from 'cloudflare:workers';
 
 const session = Astro.cookies.get("admin_session")?.value;
 if (session !== "true") {
   return Astro.redirect("/admin/login");
 }
 
-const env = (Astro.locals as any).runtime?.env || cfEnv;
-const db = env?.mief_db;
+const db = (env as any).mief_db;
 
 // Esemény mentése (Hozzáadás vagy Szerkesztés)
 if (Astro.request.method === "POST" && db) {
