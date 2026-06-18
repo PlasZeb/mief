@@ -2,27 +2,29 @@
 import '../../styles/global.css';
 
 // @ts-ignore
-import { env } from 'cloudflare:workers';
+import { env as cfEnv } from 'cloudflare:workers';
 
-// Admin ellenőrzés
 const session = Astro.cookies.get("admin_session")?.value;
 if (session !== "true") {
   return Astro.redirect("/admin/login");
 }
 
-const db = (env as any).mief_db;
+const env = (Astro.locals as any).runtime?.env || cfEnv;
+const db = env?.mief_db;
 
-// Migráció: linkedin_url és is_founder oszlopok hozzáadása
-try { await db.prepare("ALTER TABLE experts ADD COLUMN linkedin_url TEXT").run(); } catch (e) {}
-try { await db.prepare("ALTER TABLE experts ADD COLUMN is_founder INTEGER DEFAULT 0").run(); } catch (e) {}
-try { await db.prepare("ALTER TABLE experts ADD COLUMN image_url TEXT").run(); } catch (e) {}
-try { await db.prepare("ALTER TABLE experts ADD COLUMN display_order INTEGER DEFAULT 10").run(); } catch (e) {}
+if (db) {
+  // Migráció: linkedin_url és is_founder oszlopok hozzáadása
+  try { await db.prepare("ALTER TABLE experts ADD COLUMN linkedin_url TEXT").run(); } catch (e) {}
+  try { await db.prepare("ALTER TABLE experts ADD COLUMN is_founder INTEGER DEFAULT 0").run(); } catch (e) {}
+  try { await db.prepare("ALTER TABLE experts ADD COLUMN image_url TEXT").run(); } catch (e) {}
+  try { await db.prepare("ALTER TABLE experts ADD COLUMN display_order INTEGER DEFAULT 10").run(); } catch (e) {}
+}
 
 let success = Astro.url.searchParams.get('msg') === 'saved' ? 'Sikeresen mentve!' : (Astro.url.searchParams.get('msg') === 'deleted' ? 'Sikeresen törölve.' : '');
 let error = Astro.url.searchParams.get('error') === 'save' ? 'Hiba történt a mentés során.' : '';
 
 // Szakértő mentése (Hozzáadás vagy Szerkesztés)
-if (Astro.request.method === "POST") {
+if (Astro.request.method === "POST" && db) {
   const data = await Astro.request.formData();
   const action = data.get("action");
   
@@ -75,7 +77,11 @@ if (Astro.request.method === "POST") {
 }
 
 // Szakértők lekérése
-const { results: experts } = await db.prepare("SELECT * FROM experts ORDER BY is_founder DESC, display_order ASC, created_at ASC").all();
+let experts = [];
+if (db) {
+  const result = await db.prepare("SELECT * FROM experts ORDER BY is_founder DESC, display_order ASC, created_at ASC").all();
+  experts = result.results || [];
+}
 ---
 
 <html lang="hu">

@@ -18,8 +18,11 @@
 		},
 		{
 			"binding": "DOCUMENTS",
-			"id": "c5abef8b0bb24a97965cf87ce0c498e4",
-			"remote": true
+			"id": "c5abef8b0bb24a97965cf87ce0c498e4"
+		},
+		{
+			"binding": "EXPERT_IMAGES",
+			"id": "e5c0e03176604b9896eebf1dcb130f4b"
 		}
 	],
 	"images": {

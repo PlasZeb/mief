@@ -2,18 +2,18 @@
 import '../../styles/global.css';
 
 // @ts-ignore
-import { env } from 'cloudflare:workers';
+import { env as cfEnv } from 'cloudflare:workers';
 
-// Admin ellenőrzés
 const session = Astro.cookies.get("admin_session")?.value;
 if (session !== "true") {
   return Astro.redirect("/admin/login");
 }
 
-const db = (env as any).mief_db;
+const env = (Astro.locals as any).runtime?.env || cfEnv;
+const db = env?.mief_db;
 
 // Esemény mentése (Hozzáadás vagy Szerkesztés)
-if (Astro.request.method === "POST") {
+if (Astro.request.method === "POST" && db) {
   const data = await Astro.request.formData();
   const action = data.get("action");
   
@@ -44,7 +44,11 @@ if (Astro.request.method === "POST") {
 }
 
 // Események lekérése
-const { results: events } = await db.prepare("SELECT * FROM events ORDER BY date DESC").all();
+let events = [];
+if (db) {
+  const result = await db.prepare("SELECT * FROM events ORDER BY date DESC").all();
+  events = result.results || [];
+}
 ---
 
 <html lang="hu">
