@@ -2,14 +2,15 @@
 import '../../styles/global.css';
 
 // @ts-ignore
-import { env } from 'cloudflare:workers';
+import { env as cfEnv } from 'cloudflare:workers';
 
 const session = Astro.cookies.get("admin_session")?.value;
 if (session !== "true") {
   return Astro.redirect("/admin/login");
 }
 
-const db = (env as any).mief_db;
+const env = (Astro.locals as any).runtime?.env || cfEnv;
+const db = env?.mief_db;
 
 // Tábla migrációja
 try {
@@ -29,7 +30,7 @@ let success = Astro.url.searchParams.get('msg') === 'saved' ? 'Sikeresen mentve!
 let error = Astro.url.searchParams.get('error') === 'missing' ? 'Minden mező és fájl kitöltése kötelező!' : '';
 
 // Műveletek kezelése
-if (Astro.request.method === "POST") {
+if (Astro.request.method === "POST" && db) {
   const data = await Astro.request.formData();
   const action = data.get("action");
 
@@ -79,7 +80,11 @@ if (Astro.request.method === "POST") {
   }
 }
 
-const { results: documents } = await db.prepare("SELECT * FROM documents ORDER BY published_at DESC").all();
+let documents: any[] = [];
+if (db) {
+  const result = await db.prepare("SELECT * FROM documents ORDER BY published_at DESC").all();
+  documents = result.results || [];
+}
 ---
 
 <html lang="hu">

@@ -3,17 +3,24 @@ import type { APIRoute } from 'astro';
 // @ts-ignore
 import { env as cfEnv } from 'cloudflare:workers';
 
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, locals }) => {
   const { key } = params;
   
   if (!key) {
-    return new Response('Not found', { status: 404 });
+    return new Response('Missing key', { status: 400 });
   }
 
-  const env = cfEnv as any;
+  // Megpróbáljuk több helyről is megszerezni az env-et a legnagyobb kompatibilitás érdekében
+  const env = (locals as any)?.runtime?.env || cfEnv;
   
   if (!env || !env.EXPERT_IMAGES) {
-    return new Response('KV Storage not configured', { status: 500 });
+    console.error("EXPERT_IMAGES KV binding missing", { 
+      hasLocals: !!locals, 
+      hasRuntime: !!(locals as any)?.runtime,
+      hasCfEnv: !!cfEnv,
+      keys: env ? Object.keys(env) : []
+    });
+    return new Response('Storage configuration error', { status: 500 });
   }
 
   try {
@@ -23,12 +30,14 @@ export const GET: APIRoute = async ({ params }) => {
       return new Response('Image not found', { status: 404 });
     }
 
-    // Determine content type based on extension
+    // Case-insensitive content type detection
+    const lowerKey = key.toLowerCase();
     let contentType = 'image/jpeg';
-    if (key.endsWith('.png')) contentType = 'image/png';
-    else if (key.endsWith('.webp')) contentType = 'image/webp';
-    else if (key.endsWith('.gif')) contentType = 'image/gif';
-    else if (key.endsWith('.svg')) contentType = 'image/svg+xml';
+    if (lowerKey.endsWith('.png')) contentType = 'image/png';
+    else if (lowerKey.endsWith('.webp')) contentType = 'image/webp';
+    else if (lowerKey.endsWith('.gif')) contentType = 'image/gif';
+    else if (lowerKey.endsWith('.svg')) contentType = 'image/svg+xml';
+    else if (lowerKey.endsWith('.avif')) contentType = 'image/avif';
 
     return new Response(imageBuffer, {
       headers: {

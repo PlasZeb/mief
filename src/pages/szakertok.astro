@@ -4,9 +4,10 @@ import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 
 // @ts-ignore
-import { env } from 'cloudflare:workers';
+import { env as cfEnv } from 'cloudflare:workers';
 
-const db = (env as any)?.mief_db;
+const env = (Astro.locals as any).runtime?.env || cfEnv;
+const db = env?.mief_db;
 type ExpertRow = { id: number; name: string; role: string; linkedin_url?: string | null; is_founder?: number | null; image_url?: string | null; display_order?: number | null; };
 let experts: ExpertRow[] = [];
 

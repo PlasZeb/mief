@@ -4,9 +4,10 @@ import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 
 // @ts-ignore
-import { env } from 'cloudflare:workers';
+import { env as cfEnv } from 'cloudflare:workers';
 
-const db = (env as any)?.mief_db;
+const env = (Astro.locals as any).runtime?.env || cfEnv;
+const db = env?.mief_db;
 let documents: any[] = [];
 
 if (db) {
