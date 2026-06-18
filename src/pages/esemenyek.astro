@@ -2,6 +2,10 @@
 import '../styles/global.css';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
+import Hero from '../components/Hero.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import EventCard from '../components/EventCard.astro';
+import CTA from '../components/CTA.astro';
 
 // @ts-ignore
 import { env } from 'cloudflare:workers';
@@ -9,55 +13,55 @@ import { env } from 'cloudflare:workers';
 const db = (env as any)?.mief_db;
 let allEvents = [];
 let dbError = null;
-let subscribeSuccess = "";
-let subscribeError = "";
+let subscribeSuccess = '';
+let subscribeError = '';
 
-// Feliratkozó tábla migrációja (ha még nincs)
 if (db) {
   try {
-    await db.prepare("CREATE TABLE IF NOT EXISTS subscribers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, subscribed_at DATETIME DEFAULT CURRENT_TIMESTAMP)").run();
-  } catch (e) { /* már létezik */ }
+    await db.prepare('CREATE TABLE IF NOT EXISTS subscribers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, subscribed_at DATETIME DEFAULT CURRENT_TIMESTAMP)').run();
+  } catch {
+    // tábla már létezik
+  }
 }
 
-// Feliratkozás kezelése
-if (Astro.request.method === "POST" && db) {
+if (Astro.request.method === 'POST' && db) {
   const data = await Astro.request.formData();
-  const name = data.get("name");
-  const email = data.get("email");
+  const name = data.get('name');
+  const email = data.get('email');
   if (name && email) {
     try {
-      await db.prepare("INSERT INTO subscribers (name, email) VALUES (?, ?)").bind(name, email).run();
-      subscribeSuccess = "Sikeresen feliratkoztál! Értesíteni fogunk az új eseményekről.";
+      await db.prepare('INSERT INTO subscribers (name, email) VALUES (?, ?)').bind(name, email).run();
+      subscribeSuccess = 'Sikeresen feliratkoztál! Értesíteni fogunk az új eseményekről.';
     } catch (e: any) {
-      if (e?.message?.includes("UNIQUE")) {
-        subscribeError = "Ez az email cím már fel van iratkozva.";
+      if (e?.message?.includes('UNIQUE')) {
+        subscribeError = 'Ez az email cím már fel van iratkozva.';
       } else {
-        subscribeError = "Hiba történt a feliratkozás során. Kérjük próbáld újra.";
+        subscribeError = 'Hiba történt a feliratkozás során. Kérjük próbáld újra.';
       }
     }
   } else {
-    subscribeError = "Kérjük add meg a neved és email címed.";
+    subscribeError = 'Kérjük add meg a neved és email címed.';
   }
 }
 
 if (db) {
   try {
-    const result = await db.prepare("SELECT * FROM events").all();
+    const result = await db.prepare('SELECT * FROM events').all();
     allEvents = result.results || [];
   } catch (e) {
-    console.error("Database query error:", e);
-    dbError = "Nem sikerült betölteni az eseményeket.";
+    console.error('Database query error:', e);
+    dbError = 'Nem sikerült betölteni az eseményeket.';
   }
 }
 
 const now = new Date();
 const upcomingEvents = allEvents
-  .filter(event => new Date(event.date) >= now)
-  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  .filter((event: any) => new Date(event.date) >= now)
+  .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
 const pastEvents = allEvents
-  .filter(event => new Date(event.date) < now)
-  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  .filter((event: any) => new Date(event.date) < now)
+  .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 ---
 
 <html lang="hu" class="scroll-smooth">
@@ -72,145 +76,111 @@ const pastEvents = allEvents
     />
   </head>
 
-  <body class="min-h-screen bg-slate-900 text-slate-100 antialiased selection:bg-cyan-500/30">
+  <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
     <Navbar />
 
-    <main class="py-24">
-      <div class="container mx-auto px-6">
-        <div class="max-w-4xl mx-auto text-center mb-16">
-          <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-6xl mb-6">
-            Műhelyek
-          </h1>
-          <p class="text-lg text-slate-300 leading-relaxed">
-            A MIEF rendszeres online és személyes alkalmakon dolgozza fel a mesterséges intelligencia etikai, jogi, társadalmi, oktatási és biztonsági kérdéseit. Eseményeink célja nem pusztán az információátadás, hanem a szakmai párbeszéd és a közös gondolkodás.
-          </p>
-        </div>
+    <main>
+      <Hero
+        eyebrow="Műhelyek"
+        title="Szakmai műhelymunkáink"
+        description="A MIEF rendszeres online és személyes alkalmakon dolgozza fel a mesterséges intelligencia etikai, jogi, társadalmi, oktatási és biztonsági kérdéseit."
+        primaryAction={{ label: 'Értesítést kérek', href: '#feliratkozas' }}
+        secondaryAction={{ label: 'Vissza a főoldalra', href: '/' }}
+        statLine={`Összes esemény: ${allEvents.length}`}
+      />
 
-        {/* Tervezett Események */}
-        <section class="mb-24">
-          <div class="flex items-center gap-4 mb-10">
-            <h2 class="text-2xl font-bold text-white">Tervezett műhelyek</h2>
-            <div class="h-px flex-1 bg-gradient-to-r from-cyan-500/50 to-transparent"></div>
-          </div>
+      <section class="py-20 sm:py-24">
+        <div class="mx-auto max-w-7xl px-6">
+          <SectionHeader
+            eyebrow="Tervezett műhelyek"
+            title="Közelgő alkalmaink"
+            description="A szakmai párbeszéd és a közös gondolkodás tere."
+          />
 
-          <div class="grid gap-8 lg:grid-cols-2">
+          <div class="mt-12 grid gap-6 lg:grid-cols-2">
             {upcomingEvents.length > 0 ? (
-              upcomingEvents.map((event) => (
-                <div class="group relative rounded-3xl border border-cyan-400/20 bg-cyan-400/5 p-8 transition hover:bg-cyan-400/10 shadow-lg shadow-cyan-500/5">
-                  <div class="flex flex-col gap-6">
-                    <div class="flex flex-wrap items-start justify-between gap-4">
-                      <div>
-                        <span class="inline-block text-xs font-bold uppercase tracking-widest text-cyan-400 bg-cyan-400/10 px-3 py-1 rounded-full mb-3">
-                          {new Date(event.date).toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric' })}
-                        </span>
-                        <h3 class="text-2xl font-bold text-white group-hover:text-cyan-300 transition">{event.title}</h3>
-                      </div>
-                      {event.join_url && (
-                        <a href={event.join_url} target="_blank" class="shrink-0 inline-flex items-center justify-center rounded-xl bg-cyan-400 px-6 py-3 text-sm font-bold text-slate-900 transition hover:bg-cyan-300 hover:scale-105 active:scale-95">
-                          Regisztráció / Csatlakozás
-                        </a>
-                      )}
-                    </div>
-                    
-                    <div class="grid sm:grid-cols-2 gap-4 py-6 border-y border-white/5">
-                       <div class="flex items-center gap-3">
-                         <span class="text-xl">📍</span>
-                         <div>
-                           <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Helyszín / Formátum</p>
-                           <p class="text-sm text-slate-300">{event.location_url || 'Online műhelymunka'}</p>
-                         </div>
-                       </div>
-                       <div class="flex items-center gap-3">
-                         <span class="text-xl">👤</span>
-                         <div>
-                           <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Szakmai vezetés</p>
-                           <p class="text-sm text-slate-300">MIEF Szakértői közösség</p>
-                         </div>
-                       </div>
-                    </div>
-
-                    <p class="text-slate-300 leading-relaxed whitespace-pre-wrap">
-                      {event.description}
-                    </p>
-                  </div>
-                </div>
+              upcomingEvents.map((event: any, index: number) => (
+                <EventCard
+                  title={event.title}
+                  date={new Date(event.date).toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  description={event.description}
+                  joinUrl={event.join_url}
+                  featured={index === 0}
+                  past={false}
+                />
               ))
             ) : (
-              <div class="col-span-full p-12 rounded-3xl border border-dashed border-white/10 text-center">
-                <p class="text-slate-400 italic">Jelenleg nincs új esemény meghirdetve. Iratkozz fel híreinkre, hogy értesülj a következőről!</p>
-              </div>
+              <p class="col-span-full rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center text-slate-500 italic">
+                Jelenleg nincs új esemény meghirdetve. Iratkozz fel híreinkre, hogy értesülj a következőről.
+              </p>
             )}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Lezajlott Események */}
-        <section>
-          <div class="flex items-center gap-4 mb-10">
-            <h2 class="text-2xl font-bold text-slate-400">Lezajlott műhelyek archívuma</h2>
-            <div class="h-px flex-1 bg-gradient-to-r from-slate-500/30 to-transparent"></div>
-          </div>
+      <section class="border-y border-slate-200 bg-slate-50/80 py-20 sm:py-24">
+        <div class="mx-auto max-w-7xl px-6">
+          <SectionHeader
+            eyebrow="Lezajlott műhelyek"
+            title="Archívum"
+            description="A lezajlott alkalmak összefoglalói és leírásai."
+          />
 
-          <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div class="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {pastEvents.length > 0 ? (
-              pastEvents.map((event) => (
-                <div class="rounded-2xl border border-white/5 bg-white/[0.02] p-6 hover:border-white/10 transition flex flex-col h-full opacity-80 hover:opacity-100">
-                  <div class="flex-1">
-                    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500 bg-slate-800 px-2 py-0.5 rounded mb-3 inline-block">
-                      {new Date(event.date).toLocaleDateString('hu-HU', { year: 'numeric', month: 'short', day: 'numeric' })}
-                    </span>
-                    <h4 class="text-lg font-bold text-white mb-4 line-clamp-2">{event.title}</h4>
-                    <p class="text-sm text-slate-400 leading-relaxed line-clamp-4">
-                      {event.description}
-                    </p>
-                  </div>
-                  <div class="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
-                     <span class="text-[10px] font-bold text-slate-500 italic uppercase">Lezajlott</span>
-                     <span class="text-[10px] text-slate-600">Összefoglaló feltöltés alatt</span>
-                  </div>
-                </div>
+              pastEvents.map((event: any) => (
+                <EventCard
+                  title={event.title}
+                  date={new Date(event.date).toLocaleDateString('hu-HU', { year: 'numeric', month: 'short', day: 'numeric' })}
+                  description={event.description}
+                  past
+                />
               ))
             ) : (
-              <p class="col-span-full text-slate-500 italic text-center py-12">Nincsenek korábbi események rögzítve.</p>
+              <p class="col-span-full text-center text-slate-500 italic py-12">Nincsenek korábbi események rögzítve.</p>
             )}
           </div>
-        </section>
 
-        {dbError && <p class="mt-12 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-center text-red-400">{dbError}</p>}
+          {dbError && <p class="mt-10 rounded-2xl border border-red-200 bg-red-50 p-4 text-center text-red-700">{dbError}</p>}
+        </div>
+      </section>
 
-        {/* Feliratkozás szekció */}
-        <section class="mt-24 max-w-xl mx-auto">
-          <div class="bg-slate-800 border border-cyan-400/20 rounded-3xl p-8 shadow-xl text-center">
-            <h2 class="text-2xl font-bold text-white mb-2">Értesítést kérek új eseményekről</h2>
-            <p class="text-slate-400 text-sm mb-6">Add meg a neved és email címed, és értesítünk, ha új eseményt hirdetünk meg.</p>
-            {subscribeSuccess && <p class="mb-4 p-3 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded-xl text-sm">{subscribeSuccess}</p>}
-            {subscribeError && <p class="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm">{subscribeError}</p>}
+      <section id="feliratkozas" class="py-20 sm:py-24">
+        <div class="mx-auto max-w-3xl px-6">
+          <CTA
+            title="Értesítést kérek új eseményekről"
+            description="Add meg a neved és email címed, és értesítünk, ha új eseményt hirdetünk meg."
+            buttonLabel="Feliratkozás"
+            buttonHref="#feliratkozas"
+            dark
+          />
+
+          <div class="mt-6 panel-soft p-6 sm:p-8">
+            {subscribeSuccess && <p class="mb-4 rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-cyan-800">{subscribeSuccess}</p>}
+            {subscribeError && <p class="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{subscribeError}</p>}
+
             {!subscribeSuccess && (
-              <form method="POST" class="flex flex-col gap-4">
+              <form method="POST" class="flex flex-col gap-4 sm:flex-row">
                 <input
                   type="text"
                   name="name"
                   required
                   placeholder="Teljes neved"
-                  class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-cyan-400 outline-none"
+                  class="w-full flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-100"
                 />
                 <input
                   type="email"
                   name="email"
                   required
                   placeholder="email@pelda.hu"
-                  class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-cyan-400 outline-none"
+                  class="w-full flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-100"
                 />
-                <button
-                  type="submit"
-                  class="w-full bg-cyan-400 hover:bg-cyan-300 text-slate-900 font-bold py-3 rounded-xl transition shadow-lg shadow-cyan-500/20"
-                >
-                  Feliratkozás
-                </button>
+                <button type="submit" class="button-primary">Feliratkozás</button>
               </form>
             )}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </main>
 
     <Footer />

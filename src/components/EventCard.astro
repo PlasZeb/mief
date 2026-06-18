@@ -1,0 +1,43 @@
+---
+interface Props {
+  title: string;
+  date: string;
+  description: string;
+  location?: string | null;
+  joinUrl?: string | null;
+  featured?: boolean;
+  past?: boolean;
+}
+
+const { title, date, description, location, joinUrl, featured = false, past = false } = Astro.props;
+---
+
+<article class:list={["panel overflow-hidden", featured ? "ring-1 ring-cyan-200" : ""]}>
+  <div class:list={["px-6 py-5 sm:px-7", featured ? "bg-slate-950 text-white" : "bg-white"]}>
+    <div class="flex flex-wrap items-center gap-3">
+      <span class:list={["rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.24em]", featured ? "border-cyan-400/20 bg-cyan-400/10 text-cyan-200" : "border-slate-200 bg-slate-50 text-slate-600"]}>
+        {date}
+      </span>
+      <span class:list={["micro-label rounded-full px-3 py-1", past ? "bg-slate-100 text-slate-500" : "bg-cyan-50 text-cyan-700"]}>
+        {past ? 'Lezajlott' : 'Tervezett'}
+      </span>
+    </div>
+
+    <h3 class:list={["mt-4 text-2xl font-semibold tracking-tight", featured ? "text-white" : "text-slate-950"]}>{title}</h3>
+    {location && <p class:list={["mt-3 text-sm", featured ? "text-slate-300" : "text-slate-500"]}>{location}</p>}
+  </div>
+
+  <div class="px-6 py-6 sm:px-7">
+    <p class="text-sm leading-7 text-slate-600 whitespace-pre-wrap">{description}</p>
+    {joinUrl && (
+      <a
+        href={joinUrl}
+        target="_blank"
+        rel="noreferrer"
+        class="mt-6 inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800"
+      >
+        Csatlakozás
+      </a>
+    )}
+  </div>
+</article>

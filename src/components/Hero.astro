@@ -1,0 +1,100 @@
+---
+interface Action {
+  label: string;
+  href: string;
+  external?: boolean;
+}
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  description: string;
+  primaryAction?: Action;
+  secondaryAction?: Action;
+  imageSrc?: string;
+  imageAlt?: string;
+  statLine?: string;
+}
+
+const {
+  eyebrow,
+  title,
+  description,
+  primaryAction,
+  secondaryAction,
+  imageSrc,
+  imageAlt,
+  statLine,
+} = Astro.props;
+---
+
+<section class="hero-band">
+  <div class="relative mx-auto grid max-w-7xl gap-14 px-6 py-20 sm:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:px-8">
+    <div class="relative z-10">
+      {eyebrow && (
+        <div class="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200">
+          <span class="h-2 w-2 rounded-full bg-cyan-300"></span>
+          {eyebrow}
+        </div>
+      )}
+
+      <h1 class="mt-8 max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
+        {title}
+      </h1>
+
+      <p class="mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
+        {description}
+      </p>
+
+      <div class="mt-10 flex flex-col gap-3 sm:flex-row">
+        {primaryAction && (
+          <a
+            href={primaryAction.href}
+            target={primaryAction.external ? '_blank' : undefined}
+            rel={primaryAction.external ? 'noreferrer' : undefined}
+            class="inline-flex items-center justify-center rounded-xl bg-cyan-400 px-6 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/20 hover:bg-cyan-300"
+          >
+            {primaryAction.label}
+          </a>
+        )}
+        {secondaryAction && (
+          <a
+            href={secondaryAction.href}
+            target={secondaryAction.external ? '_blank' : undefined}
+            rel={secondaryAction.external ? 'noreferrer' : undefined}
+            class="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 text-sm font-bold text-white hover:bg-white/10"
+          >
+            {secondaryAction.label}
+          </a>
+        )}
+      </div>
+
+      {statLine && <p class="mt-8 text-sm text-slate-400">{statLine}</p>}
+    </div>
+
+    <div class="relative z-10">
+      {imageSrc ? (
+        <div class="panel overflow-hidden border-white/10 bg-white/5 p-3 backdrop-blur-sm">
+          <img src={imageSrc} alt={imageAlt ?? ''} class="aspect-[4/3] w-full rounded-2xl object-cover" />
+        </div>
+      ) : (
+        <div class="panel border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+              <p class="micro-label text-cyan-300">Intézményi fókusz</p>
+              <p class="mt-2 text-sm leading-6 text-slate-300">Szakmai, jogi és társadalmi nézőpontok egy közös, átlátható rendszerben.</p>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+              <p class="micro-label text-cyan-300">Technológiai karakter</p>
+              <p class="mt-2 text-sm leading-6 text-slate-300">Mély tengerészkék és cián részletek a MIEF modern arculatában.</p>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-5 sm:col-span-2">
+              <p class="micro-label text-cyan-300">Biztonságos, bővíthető alap</p>
+              <p class="mt-2 text-sm leading-6 text-slate-300">A vizuális réteg külön van választva a route- és adatlogikától, így könnyen tovább alakítható.</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+</section>

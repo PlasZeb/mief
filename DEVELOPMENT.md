@@ -51,25 +51,27 @@ Az oldal admin felülete a `/admin` útvonalon érhető el.
 
 ---
 
-## 🔄 Aktuális fejlesztési fázis (2026. június) - Rebranding
-A `mief20.md` specifikáció alapján a honlap tartalmi és szerkezeti megújítása zajlik.
+## 🔄 Aktuális fejlesztési fázis (2026. június) - Világos intézményi redesign
+A honlap vizuális rétege most a világos intézményi irányba alakul, miközben a mély tengerészkék és a cián továbbra is a MIEF márka része marad.
 
 ### Elvégzett feladatok ✅
-- **Főoldal:** Hero szekció, Küldetés, Mivel foglalkozunk, Miért a MIEF, Szakterületeink és Tudástár (Hírek helyett) szekciók frissítve.
-- **Navigáció:** Teljesen megújult, reszponzív hamburger menü (z-index fixálva, görgethető, 2xl breakpoint). A logó és márkanév a főoldalra linkelve.
-- **Favicon:** Javítva, minden oldalon megjelenik.
-- **Szakértőink oldal:** Dedikált `/szakertok` aloldal létrehozva, alapító kiemelve, dinamikus lista bekötve.
-- **Eseménytár:** Dedikált `/esemenyek` aloldal létrehozva, múltbeli és jövőbeli események különválasztva.
-- **English Summary:** Dedikált `/english` aloldal létrehozva, angol nyelvű tartalom ide áthelyezve a főoldalról.
+- **Globális design system:** Új, világos alapú szín- és tipográfiai rendszer a `src/styles/global.css` fájlban.
+- **Új komponensek:** `Hero.astro`, `SectionHeader.astro`, `BriefCard.astro`, `ExpertCard.astro`, `EventCard.astro`, `CTA.astro`.
+- **Navbar és Footer:** Egységes, világos fejlesztői/nyilvános arculatra hangolva.
+- **Főoldal:** A nyitóélmény és a fő szekciók új vizuális rendszerre álltak át, a DB-logika változatlan maradt.
+- **Tudástár:** Új `/tudastar` oldal készült szerkesztőségi, kategóriás felépítéssel; a régi `/publikaciok` cím átirányító burkolatként maradt meg.
+- **Szakértőink oldal:** Világos, intézményi kártyarendszerre váltott.
+- **Események oldal:** Az eseménylisták és feliratkozási felület új, tisztább vizuális keretet kaptak.
+- **Publikációk oldal:** A tudástár új kártyarendszerrel és oldalszerkezettel jelenik meg.
+- **English Summary:** Az angol összefoglaló oldal is az új arculatot követi.
+- **Biztonsági mentés:** A redesign előtt helyi, fájlszintű mentés készült a jelenlegi állapotról.
 
 ### Következő lépések 🚀
-1. **Tudástár kialakítása (`/tudastar`):**
+1. **Tudástár bővítése (`/tudastar`):**
    - Kategóriák: MIEF Briefs, Állásfoglalások, Ajánlások.
-   - Első Brief vázlatok (#001: AI Act, #002: GenAI oktatás).
-   - Markdown alapú (Astro Content Collections) tartalomkezelés bevezetése a könnyű bővíthetőségért.
-2. **Footer frissítése:**
-   - Navigációs linkek bővítése (Szakértők, Események, Tudástár, English).
-   - Rövid intézményi leírás frissítése.
+   - Markdown alapú tartalomkezelés bevezetése a hosszú távú bővíthetőséghez.
+2. **Admin felület vizuális összhangja:**
+   - Az admin oldalak később kaphatnak könnyített, az új nyilvános designhoz illeszkedő frissítést.
 3. **Szakértői profilok gazdagítása:**
    - Adatbázis sémabővítés (kulcstéma, miben kereshető mezők hozzáadása).
    - Admin felület felkészítése az új mezők szerkesztésére.

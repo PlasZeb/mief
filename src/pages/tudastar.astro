@@ -1,0 +1,262 @@
+---
+import '../styles/global.css';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import Hero from '../components/Hero.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import BriefCard from '../components/BriefCard.astro';
+import CTA from '../components/CTA.astro';
+
+// @ts-ignore
+import { env } from 'cloudflare:workers';
+
+const db = (env as any)?.mief_db;
+let documents: any[] = [];
+
+if (db) {
+  try {
+    const { results } = await db.prepare('SELECT * FROM documents ORDER BY published_at DESC').all();
+    documents = results || [];
+  } catch (e) {
+    console.error('DB error:', e);
+  }
+}
+
+const briefs = documents.filter((d) => d.type === 'brief');
+const ajanlasok = documents.filter((d) => d.type === 'ajanlas');
+const allasfoglalasok = documents.filter((d) => d.type === 'allasfoglalas');
+const egyeb = documents.filter((d) => d.type === 'egyeb');
+const featuredBriefs = briefs.slice(0, 2);
+const latestDocuments = documents.slice(0, 3);
+---
+
+<html lang="hu" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" />
+    <title>Tudástár | MIEF</title>
+    <meta
+      name="description"
+      content="A MIEF Tudástár szakmai háttéranyagok, briefek, ajánlások és állásfoglalások gyűjteménye."
+    />
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+    <Navbar />
+
+    <main>
+      <Hero
+        eyebrow="Tudástár"
+        title="Szakmai anyagok, briefek és állásfoglalások"
+        description="A Tudástár a MIEF írott szakmai anyagainak otthona: rövid briefek, ajánlások, állásfoglalások és egyéb háttéranyagok egy világos, átlátható rendszerben."
+        primaryAction={{ label: 'Ugrás a briefekhez', href: '#briefs' }}
+        secondaryAction={{ label: 'Vissza a főoldalra', href: '/' }}
+        statLine={`Briefek: ${briefs.length} · Ajánlások: ${ajanlasok.length} · Állásfoglalások: ${allasfoglalasok.length}`}
+      />
+
+      <section class="border-y border-slate-200 bg-slate-50/80">
+        <div class="mx-auto max-w-7xl px-6 py-8">
+          <div class="grid gap-4 md:grid-cols-3">
+            <div class="panel-soft px-5 py-4">
+              <p class="micro-label text-cyan-700">Rövid és használható</p>
+              <p class="mt-2 text-sm leading-6 text-slate-600">A briefek lényege, hogy gyorsan átadható, szakmailag megalapozott összefoglalók legyenek.</p>
+            </div>
+            <div class="panel-soft px-5 py-4">
+              <p class="micro-label text-cyan-700">Kategorizált tartalom</p>
+              <p class="mt-2 text-sm leading-6 text-slate-600">A Tudástár nem csak lista, hanem jól tagolt szakmai gyűjtemény.</p>
+            </div>
+            <div class="panel-soft px-5 py-4">
+              <p class="micro-label text-cyan-700">Később bővíthető</p>
+              <p class="mt-2 text-sm leading-6 text-slate-600">A jelenlegi struktúra könnyen kiterjeszthető Markdown alapú tartalomkezelésre.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="py-20 sm:py-24">
+        <div class="mx-auto max-w-7xl px-6">
+          <div class="grid gap-10 lg:grid-cols-[0.34fr_0.66fr]">
+            <aside class="lg:sticky lg:top-28 h-fit space-y-6">
+              <div class="panel p-6">
+                <p class="section-kicker">Navigáció</p>
+                <nav class="mt-5 flex flex-col gap-3 text-sm font-medium">
+                  <a href="#briefs" class="nav-link">MIEF Briefs ({briefs.length})</a>
+                  <a href="#ajanlasok" class="nav-link">Ajánlások ({ajanlasok.length})</a>
+                  <a href="#allasfoglalasok" class="nav-link">Állásfoglalások ({allasfoglalasok.length})</a>
+                  {egyeb.length > 0 && <a href="#egyeb" class="nav-link">Egyéb anyagok ({egyeb.length})</a>}
+                </nav>
+              </div>
+
+              <div class="panel p-6">
+                <p class="section-kicker">Legfrissebb</p>
+                <div class="mt-5 space-y-4">
+                  {latestDocuments.length > 0 ? (
+                    latestDocuments.map((doc) => (
+                      <a href={doc.url} target="_blank" rel="noreferrer" class="block rounded-2xl border border-slate-200 bg-slate-50 p-4 hover:border-cyan-200 hover:bg-cyan-50/70">
+                        <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-cyan-700">{doc.type}</p>
+                        <p class="mt-2 text-sm font-semibold text-slate-950">{doc.title}</p>
+                        <p class="mt-1 text-xs text-slate-500">{doc.published_at}</p>
+                      </a>
+                    ))
+                  ) : (
+                    <p class="text-sm text-slate-500">Még nincs megjelenített anyag.</p>
+                  )}
+                </div>
+              </div>
+            </aside>
+
+            <div class="space-y-20">
+              <section class="rounded-[2rem] border border-slate-200 bg-white p-8 sm:p-10">
+                <SectionHeader
+                  eyebrow="Kiadási elv"
+                  title="A Tudástár a MIEF szakmai memóriája"
+                  description="A cél nem csak a dokumentumok közzététele, hanem az, hogy egy áttekinthető, később bővíthető tudásrendszer jöjjön létre."
+                />
+
+                <div class="mt-10 grid gap-6 md:grid-cols-3">
+                  <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                    <p class="micro-label text-cyan-700">MIEF Briefs</p>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">Rövid háttéranyagok egy-egy kiemelt téma köré szervezve.</p>
+                  </div>
+                  <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                    <p class="micro-label text-indigo-700">Állásfoglalások</p>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">A szakértői közösség által konszenzussal elfogadott szakmai álláspontok.</p>
+                  </div>
+                  <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                    <p class="micro-label text-amber-700">Ajánlások</p>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">Praktikus, döntéstámogató anyagok szervezetek és szakemberek számára.</p>
+                  </div>
+                </div>
+              </section>
+
+              <section id="briefs" class="scroll-mt-28">
+                <SectionHeader
+                  eyebrow="MIEF Briefs"
+                  title="Kiemelt háttéranyagok"
+                  description="A legfontosabb, röviden áttekinthető anyagok a MIEF-től."
+                />
+                <div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                  {featuredBriefs.length > 0 ? (
+                    featuredBriefs.map((doc) => (
+                      <BriefCard
+                        title={doc.title}
+                        summary="Kiemelt brief a MIEF Tudástárban."
+                        href={doc.url}
+                        label="MIEF Brief"
+                        publishedAt={doc.published_at}
+                        accent="cyan"
+                        featured
+                      />
+                    ))
+                  ) : (
+                    <p class="text-slate-500 italic">Jelenleg nincs kiemelt brief.</p>
+                  )}
+                </div>
+
+                <div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                  {briefs.slice(2).length > 0 ? (
+                    briefs.slice(2).map((doc) => (
+                      <BriefCard
+                        title={doc.title}
+                        summary="Szakmai háttéranyag a MIEF Tudástárban."
+                        href={doc.url}
+                        label="MIEF Brief"
+                        publishedAt={doc.published_at}
+                        accent="cyan"
+                      />
+                    ))
+                  ) : null}
+                </div>
+              </section>
+
+              <section id="ajanlasok" class="scroll-mt-28">
+                <SectionHeader
+                  eyebrow="Ajánlások"
+                  title="Gyakorlati útmutatók"
+                  description="Döntéshozóknak, szervezeteknek és szakembereknek szóló iránymutatások."
+                />
+                <div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                  {ajanlasok.length > 0 ? (
+                    ajanlasok.map((doc) => (
+                      <BriefCard
+                        title={doc.title}
+                        summary="Ajánlás a felelős MI-használathoz."
+                        href={doc.url}
+                        label="Ajánlás"
+                        publishedAt={doc.published_at}
+                        accent="indigo"
+                      />
+                    ))
+                  ) : (
+                    <p class="text-slate-500 italic">Jelenleg nincs feltöltött ajánlás.</p>
+                  )}
+                </div>
+              </section>
+
+              <section id="allasfoglalasok" class="scroll-mt-28">
+                <SectionHeader
+                  eyebrow="Állásfoglalások"
+                  title="A közösség szakmai álláspontjai"
+                  description="Azok az anyagok, amelyek a MIEF szakértői közösség konszenzusát tükrözik."
+                />
+                <div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                  {allasfoglalasok.length > 0 ? (
+                    allasfoglalasok.map((doc) => (
+                      <BriefCard
+                        title={doc.title}
+                        summary="A közösség szakmai álláspontja."
+                        href={doc.url}
+                        label="Állásfoglalás"
+                        publishedAt={doc.published_at}
+                        accent="amber"
+                      />
+                    ))
+                  ) : (
+                    <p class="text-slate-500 italic">Jelenleg nincs feltöltött állásfoglalás.</p>
+                  )}
+                </div>
+              </section>
+
+              {egyeb.length > 0 && (
+                <section id="egyeb" class="scroll-mt-28">
+                  <SectionHeader
+                    eyebrow="Egyéb anyagok"
+                    title="Kiegészítő dokumentumok"
+                    description="További szakmai tartalmak a Tudástárban."
+                  />
+                  <div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                    {egyeb.map((doc) => (
+                      <BriefCard
+                        title={doc.title}
+                        summary="Kiegészítő dokumentum a Tudástárban."
+                        href={doc.url}
+                        label="Egyéb"
+                        publishedAt={doc.published_at}
+                        accent="slate"
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="border-y border-slate-200 bg-slate-50/80 py-20 sm:py-24">
+        <div class="mx-auto max-w-7xl px-6">
+          <CTA
+            title="Szeretnél új anyagokról értesülni?"
+            description="A Tudástár és az események rendszeresen bővülnek. A feliratkozással elsőként kapsz hírt az új megjelenésekről."
+            buttonLabel="Feliratkozás az eseményekre"
+            buttonHref="/esemenyek#feliratkozas"
+            secondaryLabel="Kapcsolat"
+            secondaryHref="/#kapcsolat"
+          />
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+  </body>
+</html>

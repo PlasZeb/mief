@@ -2,6 +2,22 @@
 
 Minden jelentős változtatás ebben a fájlban kerül rögzítésre.
 
+## [1.7.0] - 2026-06-18
+### Megváltoztatva
+- **Arculatváltás:** A nyilvános felületek vizuális nyelve világos, intézményi irányba fordult, miközben megmaradt a mély tengerészkék és cián márkaazonosság.
+- **Közös komponensek:** Új, újrahasznosítható Astro komponensek jelentek meg a hero-, szekciófejléc-, kártya- és CTA-rétegekhez.
+- **Főoldal és aloldalak:** A fő nyilvános oldalak egységes, letisztult vizuális rendszerre álltak át, a route-ok és adatlogika változatlanul megmaradtak.
+- **Tudástár:** Új, külön `/tudastar` útvonal készült, a korábbi publikációs cím pedig kompatibilis átirányító burkolatot kapott.
+
+### Hozzáadva
+- **Új komponensek:** `Hero.astro`, `SectionHeader.astro`, `BriefCard.astro`, `ExpertCard.astro`, `EventCard.astro`, `CTA.astro`.
+- **Globális stílus:** Új, világos intézményi design system a `src/styles/global.css` fájlban.
+- **Biztonsági mentés:** A redesign előtt helyi fájlszintű backup készült a jelenlegi állapotról.
+
+### Javítva
+- **Astro config:** A korábbi, duplikált Tailwind import megszüntetve.
+- **Navigáció és lábléc:** Világos tónusú, egységesebb fejlécre és láblécre váltás.
+
 ## [1.6.1] - 2026-06-16
 ### Megváltoztatva
 - **Névcsere – Műhelyek/Programok:** A saját MIEF alkalmak (korábban „Eseménytár") átnevezve „Műhelyek"-re a navigációban, főoldalon és az `/esemenyek` oldalon. A külsős programajánló a navigációban „Programok" névvel szerepel (belső neve marad: Programajánló).

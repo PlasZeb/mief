@@ -1,45 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 :root {
-	--font-body: 'DM Sans', 'Segoe UI', sans-serif;
-	--font-display: 'Space Grotesk', 'Segoe UI', sans-serif;
+  --font-body: 'DM Sans', 'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk', 'Segoe UI', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-	font-family: var(--font-body);
-	letter-spacing: 0.005em;
+  font-family: var(--font-body);
+  background:
+    radial-gradient(circle at top, rgba(8, 145, 178, 0.08), transparent 28%),
+    linear-gradient(180deg, #f8fafc 0%, #ffffff 52%, #f8fafc 100%);
+  color: #0f172a;
+  letter-spacing: 0.0025em;
 }
 
 h1,
 h2,
 h3,
-h4 {
-	font-family: var(--font-display);
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: rgba(14, 165, 233, 0.18);
+  color: #082f49;
+}
+
+@layer base {
+  body {
+    @apply antialiased;
+  }
+
+  a {
+    @apply transition duration-200;
+  }
+
+  img {
+    @apply max-w-full;
+  }
 }
 
 @layer components {
-	.section-kicker {
-		@apply text-sm font-bold uppercase tracking-widest text-cyan-400;
-	}
+  .section-kicker {
+    @apply text-xs font-bold uppercase tracking-[0.32em] text-cyan-700;
+  }
 
-	.section-kicker-emerald {
-		@apply text-sm font-bold uppercase tracking-widest text-emerald-400;
-	}
+  .section-kicker-emerald {
+    @apply text-xs font-bold uppercase tracking-[0.32em] text-emerald-700;
+  }
 
-	.section-heading {
-		@apply mt-4 text-3xl sm:text-4xl font-bold leading-tight text-white;
-	}
+  .section-heading {
+    @apply mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl;
+  }
 
-	.section-intro {
-		@apply mt-6 text-slate-300 leading-relaxed;
-	}
+  .section-intro {
+    @apply mt-6 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8;
+  }
 
-	.section-copy {
-		@apply text-lg leading-relaxed text-slate-300;
-	}
+  .section-copy {
+    @apply text-base leading-7 text-slate-600 sm:text-lg sm:leading-8;
+  }
 
-	.micro-label {
-		@apply text-[11px] font-semibold uppercase tracking-wide;
-	}
+  .micro-label {
+    @apply text-[11px] font-bold uppercase tracking-[0.24em];
+  }
+
+  .panel {
+    @apply rounded-3xl border border-slate-200 bg-white shadow-[0_20px_50px_-30px_rgba(15,23,42,0.22)];
+  }
+
+  .panel-soft {
+    @apply rounded-3xl border border-slate-200/80 bg-slate-50/80;
+  }
+
+  .nav-link {
+    @apply text-sm font-medium text-slate-600 hover:text-cyan-700;
+  }
+
+  .nav-pill {
+    @apply inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-cyan-200 hover:text-cyan-800 hover:shadow-sm;
+  }
+
+  .button-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-cyan-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-cyan-600/20 hover:bg-cyan-500 hover:shadow-cyan-600/25;
+  }
+
+  .button-secondary {
+    @apply inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-800 hover:border-cyan-200 hover:bg-cyan-50;
+  }
+
+  .hero-band {
+    @apply relative overflow-hidden bg-slate-950 text-white;
+  }
+
+  .hero-band::before {
+    content: '';
+    @apply absolute inset-0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(34, 211, 238, 0.16), transparent 32%),
+      radial-gradient(circle at 80% 0%, rgba(59, 130, 246, 0.16), transparent 28%);
+  }
+
+  .hero-band::after {
+    content: '';
+    @apply absolute inset-x-0 top-0 h-px;
+    background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.65), transparent);
+  }
 }

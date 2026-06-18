@@ -1,41 +1,38 @@
 ---
 ---
-<nav class="sticky top-0 z-50 w-full border-b border-white/10 bg-slate-900/80 backdrop-blur-md">
+<nav class="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
   <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
     <a href="/" class="flex items-center gap-3 shrink-0 hover:opacity-80 transition">
-      <img src="/assets/logo.jpg" alt="MIEF Logo" class="h-10 w-10 rounded-lg object-cover shadow-lg shadow-cyan-500/20" />
-      <span class="text-xl font-bold tracking-tight text-white">MIEF</span>
+      <img src="/assets/logo.jpg" alt="MIEF Logo" class="h-10 w-10 rounded-lg object-cover shadow-lg shadow-cyan-500/10 ring-1 ring-slate-200" />
+      <span class="text-xl font-bold tracking-tight text-slate-950">MIEF</span>
     </a>
-    
-    {/* Desktop Menu - Hidden on tablets and below to prevent overlapping */}
-    <div class="hidden 2xl:flex items-center gap-6 text-sm font-medium text-slate-300">
+
+    <div class="hidden 2xl:flex items-center gap-6 text-sm font-medium text-slate-600">
       <ul class="flex gap-6">
-        <li><a href="/#miert" class="transition hover:text-cyan-400">Kik vagyunk</a></li>
-        <li><a href="/#kinek" class="transition hover:text-cyan-400">Miért fontos az MI-etika?</a></li>
-        <li><a href="/#hirek" class="transition hover:text-cyan-400 font-semibold text-cyan-300">Tudástár</a></li>
-        <li><a href="/#esemenyek" class="transition hover:text-cyan-400">Műhelyek</a></li>
-        <li><a href="/#programok" class="transition hover:text-cyan-400">Programok</a></li>
-        <li><a href="/szakertok" class="transition hover:text-cyan-400">Szakértőink</a></li>
-        <li><a href="/#fokusz" class="transition hover:text-cyan-400">Szakértői területeink</a></li>
-        <li><a href="/#kapcsolat" class="transition hover:text-cyan-400">Kapcsolat</a></li>
+        <li><a href="/#miert" class="transition hover:text-cyan-700">Kik vagyunk</a></li>
+        <li><a href="/#kinek" class="transition hover:text-cyan-700">Miért fontos az MI-etika?</a></li>
+        <li><a href="/tudastar" class="transition font-semibold text-cyan-700">Tudástár</a></li>
+        <li><a href="/#esemenyek" class="transition hover:text-cyan-700">Műhelyek</a></li>
+        <li><a href="/#programok" class="transition hover:text-cyan-700">Programok</a></li>
+        <li><a href="/szakertok" class="transition hover:text-cyan-700">Szakértőink</a></li>
+        <li><a href="/#fokusz" class="transition hover:text-cyan-700">Szakértői területeink</a></li>
+        <li><a href="/#kapcsolat" class="transition hover:text-cyan-700">Kapcsolat</a></li>
       </ul>
     </div>
 
-    {/* Right side actions - Always visible */}
     <div class="flex items-center gap-3 sm:gap-6">
       <div class="hidden sm:flex items-center gap-4">
-        <a href="/english" class="text-xs font-bold text-slate-400 hover:text-white transition uppercase tracking-widest">English</a>
-        <a href="https://www.linkedin.com/company/113130027" target="_blank" class="text-slate-400 hover:text-cyan-400 transition" title="MIEF LinkedIn">
+        <a href="/english" class="text-xs font-bold text-slate-500 hover:text-slate-950 transition uppercase tracking-widest">English</a>
+        <a href="https://www.linkedin.com/company/113130027" target="_blank" rel="noreferrer" class="text-slate-500 hover:text-cyan-700 transition" title="MIEF LinkedIn">
           <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
         </a>
       </div>
 
-      <a href="/#regisztracio" class="rounded-full bg-cyan-400 px-4 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-slate-900 transition hover:bg-cyan-300 whitespace-nowrap">
+      <a href="/#regisztracio" class="rounded-full bg-slate-950 px-4 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-cyan-700 whitespace-nowrap">
         Csatlakozás
       </a>
 
-      {/* Hamburger Toggle */}
-      <button id="menu-toggle" class="2xl:hidden flex flex-col gap-1.5 p-2 text-slate-300 hover:text-white transition" aria-label="Menu">
+      <button id="menu-toggle" class="2xl:hidden flex flex-col gap-1.5 p-2 text-slate-700 hover:text-slate-950 transition" aria-label="Menu" aria-expanded="false">
         <span class="h-0.5 w-6 bg-current transition-all duration-300"></span>
         <span class="h-0.5 w-6 bg-current transition-all duration-300"></span>
         <span class="h-0.5 w-6 bg-current transition-all duration-300"></span>
@@ -43,36 +40,35 @@
     </div>
   </div>
 
-  {/* Mobile Menu Overlay - Highest priority, fixed to viewport */}
   <div id="mobile-menu" class="fixed inset-0 z-[9999] hidden 2xl:hidden h-[100dvh] w-screen">
-    <div class="absolute inset-0 bg-slate-950/95 backdrop-blur-xl" id="menu-backdrop"></div>
-    <div class="absolute right-0 top-0 h-full w-80 bg-slate-900 border-l border-white/10 p-8 shadow-2xl transition-transform duration-300 translate-x-full overflow-y-auto flex flex-col" id="menu-content">
+    <div class="absolute inset-0 bg-slate-950/20 backdrop-blur-sm" id="menu-backdrop"></div>
+    <div class="absolute right-0 top-0 h-full w-80 bg-white border-l border-slate-200 p-8 shadow-2xl transition-transform duration-300 translate-x-full overflow-y-auto flex flex-col" id="menu-content">
       <div class="flex justify-between items-center mb-10 shrink-0">
-        <span class="text-2xl font-bold text-white tracking-tight">Menü</span>
-        <button id="menu-close" class="text-slate-400 hover:text-white p-2 transition-all hover:rotate-90" aria-label="Bezárás">
+        <span class="text-2xl font-bold text-slate-950 tracking-tight">Menü</span>
+        <button id="menu-close" class="text-slate-500 hover:text-slate-950 p-2 transition-all hover:rotate-90" aria-label="Bezárás">
           <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
-      
+
       <nav class="flex-1">
         <ul class="flex flex-col gap-6">
-          <li><a href="/" class="mobile-link text-xl font-bold text-white hover:text-cyan-400 transition">Kezdőlap</a></li>
-          <li><a href="/#miert" class="mobile-link text-xl font-bold text-white hover:text-cyan-400 transition">Kik vagyunk</a></li>
-          <li><a href="/#kinek" class="mobile-link text-xl font-bold text-white hover:text-cyan-400 transition">Miért fontos az MI-etika?</a></li>
-          <li><a href="/#hirek" class="mobile-link text-xl font-bold text-white hover:text-cyan-400 transition">Tudástár</a></li>
-          <li><a href="/#esemenyek" class="mobile-link text-xl font-bold text-white hover:text-cyan-400 transition">Műhelyek</a></li>
-          <li><a href="/#programok" class="mobile-link text-xl font-bold text-white hover:text-cyan-400 transition">Programok</a></li>
-          <li><a href="/szakertok" class="mobile-link text-xl font-bold text-white hover:text-cyan-400 transition">Szakértőink</a></li>
-          <li><a href="/#fokusz" class="mobile-link text-xl font-bold text-white hover:text-cyan-400 transition">Szakértői területeink</a></li>
-          <li><a href="/#kapcsolat" class="mobile-link text-xl font-bold text-white hover:text-cyan-400 transition">Kapcsolat</a></li>
+          <li><a href="/" class="mobile-link text-xl font-bold text-slate-950 hover:text-cyan-700 transition">Kezdőlap</a></li>
+          <li><a href="/#miert" class="mobile-link text-xl font-bold text-slate-950 hover:text-cyan-700 transition">Kik vagyunk</a></li>
+          <li><a href="/#kinek" class="mobile-link text-xl font-bold text-slate-950 hover:text-cyan-700 transition">Miért fontos az MI-etika?</a></li>
+          <li><a href="/tudastar" class="mobile-link text-xl font-bold text-slate-950 hover:text-cyan-700 transition">Tudástár</a></li>
+          <li><a href="/#esemenyek" class="mobile-link text-xl font-bold text-slate-950 hover:text-cyan-700 transition">Műhelyek</a></li>
+          <li><a href="/#programok" class="mobile-link text-xl font-bold text-slate-950 hover:text-cyan-700 transition">Programok</a></li>
+          <li><a href="/szakertok" class="mobile-link text-xl font-bold text-slate-950 hover:text-cyan-700 transition">Szakértőink</a></li>
+          <li><a href="/#fokusz" class="mobile-link text-xl font-bold text-slate-950 hover:text-cyan-700 transition">Szakértői területeink</a></li>
+          <li><a href="/#kapcsolat" class="mobile-link text-xl font-bold text-slate-950 hover:text-cyan-700 transition">Kapcsolat</a></li>
         </ul>
       </nav>
 
-      <div class="mt-auto pt-10 border-t border-white/10 flex flex-col gap-6 shrink-0">
-        <a href="/english" class="mobile-link text-sm font-bold text-slate-400 uppercase tracking-widest hover:text-white transition">English Summary</a>
-        <a href="https://www.linkedin.com/company/113130027" target="_blank" class="flex items-center gap-3 text-slate-400 hover:text-cyan-400 transition font-bold">
+      <div class="mt-auto pt-10 border-t border-slate-200 flex flex-col gap-6 shrink-0">
+        <a href="/english" class="mobile-link text-sm font-bold text-slate-500 uppercase tracking-widest hover:text-slate-950 transition">English Summary</a>
+        <a href="https://www.linkedin.com/company/113130027" target="_blank" rel="noreferrer" class="flex items-center gap-3 text-slate-500 hover:text-cyan-700 transition font-bold">
           <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
           MIEF LinkedIn
         </a>
@@ -91,14 +87,16 @@
 
   function openMenu() {
     menu?.classList.remove('hidden');
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       content?.classList.remove('translate-x-full');
-    }, 10);
+    });
+    toggle?.setAttribute('aria-expanded', 'true');
   }
 
   function closeMenu() {
     content?.classList.add('translate-x-full');
-    setTimeout(() => {
+    toggle?.setAttribute('aria-expanded', 'false');
+    window.setTimeout(() => {
       menu?.classList.add('hidden');
     }, 300);
   }
@@ -106,8 +104,8 @@
   toggle?.addEventListener('click', openMenu);
   close?.addEventListener('click', closeMenu);
   backdrop?.addEventListener('click', closeMenu);
-  
-  links.forEach(link => {
+
+  links.forEach((link) => {
     link.addEventListener('click', closeMenu);
   });
 </script>

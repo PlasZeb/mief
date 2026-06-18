@@ -1,0 +1,40 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  buttonLabel: string;
+  buttonHref: string;
+  secondaryLabel?: string;
+  secondaryHref?: string;
+  dark?: boolean;
+}
+
+const {
+  title,
+  description,
+  buttonLabel,
+  buttonHref,
+  secondaryLabel,
+  secondaryHref,
+  dark = false,
+} = Astro.props;
+---
+
+<section class:list={["rounded-[2rem] px-6 py-14 sm:px-10 sm:py-16", dark ? "hero-band text-white" : "panel"]}>
+  <div class="relative z-10 mx-auto max-w-4xl text-center">
+    <h2 class="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h2>
+    <p class:list={["mx-auto mt-5 max-w-2xl text-base leading-7 sm:text-lg", dark ? "text-slate-300" : "text-slate-600"]}>
+      {description}
+    </p>
+    <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+      <a href={buttonHref} class="button-primary">
+        {buttonLabel}
+      </a>
+      {secondaryLabel && secondaryHref && (
+        <a href={secondaryHref} class={dark ? "inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-bold text-white hover:bg-white/10" : "button-secondary"}>
+          {secondaryLabel}
+        </a>
+      )}
+    </div>
+  </div>
+</section>

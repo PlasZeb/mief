@@ -1,0 +1,43 @@
+---
+interface Props {
+  title: string;
+  summary: string;
+  href: string;
+  label?: string;
+  publishedAt?: string;
+  accent?: 'cyan' | 'indigo' | 'amber' | 'slate';
+  featured?: boolean;
+}
+
+const {
+  title,
+  summary,
+  href = '#',
+  label = 'MIEF Brief',
+  publishedAt,
+  accent = 'cyan',
+  featured = false,
+} = Astro.props;
+
+const accentClasses = {
+  cyan: 'border-cyan-200 bg-cyan-50 text-cyan-700',
+  indigo: 'border-indigo-200 bg-indigo-50 text-indigo-700',
+  amber: 'border-amber-200 bg-amber-50 text-amber-700',
+  slate: 'border-slate-200 bg-slate-100 text-slate-700',
+};
+---
+
+<article class:list={["panel group p-6 sm:p-7", featured ? "ring-1 ring-cyan-200" : ""]}>
+  <div class="flex items-start justify-between gap-4">
+    <span class:list={["micro-label rounded-full border px-3 py-1", accentClasses[accent]]}>{label}</span>
+    {publishedAt && <span class="text-xs font-medium text-slate-500">{publishedAt}</span>}
+  </div>
+
+  <h3 class="mt-5 text-xl font-semibold tracking-tight text-slate-950 group-hover:text-cyan-700">{title}</h3>
+  <p class="mt-3 text-sm leading-7 text-slate-600">{summary}</p>
+
+  <a href={href} target="_blank" rel="noreferrer" class="mt-6 inline-flex items-center gap-2 text-sm font-bold text-cyan-700 hover:text-cyan-600">
+    Tovább
+    <span aria-hidden="true">→</span>
+  </a>
+</article>
