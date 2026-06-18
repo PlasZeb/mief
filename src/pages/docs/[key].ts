@@ -3,15 +3,14 @@ import type { APIRoute } from 'astro';
 // @ts-ignore
 import { env as cfEnv } from 'cloudflare:workers';
 
-export const GET: APIRoute = async ({ params, locals }) => {
+export const GET: APIRoute = async ({ params }) => {
   const { key } = params;
   
   if (!key) {
     return new Response('Not found', { status: 404 });
   }
 
-  // Megpróbáljuk megszerezni az env-et a locals-ból (Astro standard Cloudflare adapter esetén)
-  const env = (locals as any).runtime?.env || cfEnv;
+  const env = cfEnv as any;
   
   if (!env || !env.DOCUMENTS) {
     return new Response('KV Storage not configured', { status: 500 });
