@@ -3,14 +3,57 @@ import '../../../styles/global.css';
 import Navbar from '../../../components/Navbar.astro';
 import Footer from '../../../components/Footer.astro';
 
+// @ts-ignore
+import { env } from 'cloudflare:workers';
+
 const { key } = Astro.params;
 
 if (!key) {
   return Astro.redirect('/tudastar');
 }
 
-const pdfUrl = `/docs/${key}`;
-const viewerUrl = `/docs/view/${key}`;
+const bucket = (env as any).DOCUMENTS_BUCKET;
+const kv = (env as any).DOCUMENTS;
+const downloadUrl = `/docs/${key}`;
+
+const toBase64 = (bytes: Uint8Array) => {
+  let binary = '';
+  const chunkSize = 0x8000;
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+
+  return btoa(binary);
+};
+
+let pdfDataUrl = '';
+let statusMessage = '';
+
+try {
+  if (bucket) {
+    const object = await bucket.get(key);
+    if (object) {
+      const bytes = new Uint8Array(await object.arrayBuffer());
+      const mimeType = object.httpMetadata?.contentType || 'application/pdf';
+      pdfDataUrl = `data:${mimeType};base64,${toBase64(bytes)}`;
+    }
+  }
+
+  if (!pdfDataUrl && kv) {
+    const pdfBuffer = await kv.get(key, { type: 'arrayBuffer' });
+    if (pdfBuffer) {
+      pdfDataUrl = `data:application/pdf;base64,${toBase64(new Uint8Array(pdfBuffer))}`;
+    }
+  }
+
+  if (!pdfDataUrl) {
+    statusMessage = 'A dokumentum nem található a tárolóban.';
+  }
+} catch (error) {
+  console.error('Error loading document preview:', error);
+  statusMessage = 'A dokumentum előnézete jelenleg nem tölthető be.';
+}
 ---
 
 <html lang="hu" class="scroll-smooth">
@@ -34,40 +77,23 @@ const viewerUrl = `/docs/view/${key}`;
               <p class="section-intro">A dokumentum a lapon belül jelenik meg. Ha a böngésző nem támogatja az előnézetet, a PDF külön is megnyitható ugyanerről az oldalról.</p>
             </div>
             <div class="flex flex-wrap gap-3">
-              <a href={viewerUrl} target="_blank" rel="noreferrer" class="button-primary">Megnyitás új lapon</a>
-              <a href={pdfUrl} target="_blank" rel="noreferrer" class="button-secondary">PDF közvetlen megnyitása</a>
+              <a href={downloadUrl} download class="button-primary">PDF letöltése</a>
               <a href="/tudastar" class="button-secondary">Vissza a tudástárra</a>
             </div>
           </div>
 
-          <div class="mt-8 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-100">
-            <iframe id="pdf-frame" class="h-[78vh] w-full" title="Dokumentum előnézet"></iframe>
-          </div>
+          {statusMessage ? (
+            <div class="mt-8 rounded-3xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
+              {statusMessage}
+            </div>
+          ) : (
+            <div class="mt-8 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-100">
+              <iframe src={pdfDataUrl} class="h-[78vh] w-full" title="Dokumentum előnézet"></iframe>
+            </div>
+          )}
         </section>
       </div>
     </main>
-
-    <script is:inline define:vars={{ pdfUrl }}>
-      const frame = document.getElementById('pdf-frame');
-      const container = frame?.parentElement;
-
-      fetch(pdfUrl)
-        .then(async (response) => {
-          if (!response.ok) {
-            throw new Error(`PDF load failed: ${response.status}`);
-          }
-          return response.blob();
-        })
-        .then((blob) => {
-          const objectUrl = URL.createObjectURL(blob);
-          frame.src = objectUrl;
-        })
-        .catch(() => {
-          if (container) {
-            container.innerHTML = '<div class="flex h-[78vh] items-center justify-center p-8 text-center"><div><p class="text-lg font-semibold text-slate-950">A dokumentum nem tölthető be.</p><p class="mt-2 text-sm text-slate-600">Nyisd meg a PDF-et a külön megnyitó gombbal, vagy ellenőrizd, hogy a fájl tényleg a dokumentumtárolóban van.</p></div></div>';
-          }
-        });
-    </script>
 
     <Footer />
   </body>

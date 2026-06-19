@@ -11,14 +11,14 @@ export const GET: APIRoute = async ({ params, locals }) => {
   }
 
   const runtimeEnv = (locals as any)?.runtime?.env;
-  const directLocals = (locals as any)?.DOCUMENTS ? locals as any : null;
+  const directLocals = locals as any;
   const env = runtimeEnv || directLocals || cfEnv || (typeof globalThis !== 'undefined' ? globalThis : {});
 
-  const bucket = env.DOCUMENTS_BUCKET;
-  const kv = env.DOCUMENTS;
+  const bucket = env?.DOCUMENTS_BUCKET;
+  const kv = env?.DOCUMENTS;
 
   if (!bucket && !kv) {
-    return new Response('Document storage not configured', { status: 500 });
+    return new Response(`Document storage not configured. Available: ${Object.keys(env || {}).join(', ')}`, { status: 500 });
   }
 
   try {
