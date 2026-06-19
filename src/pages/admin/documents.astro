@@ -80,7 +80,7 @@ if (Astro.request.method === "POST" && db) {
   } else if (action === "delete") {
     const id = data.get("id");
     try {
-      const existingDoc = documents.find((doc) => String(doc.id) === String(id));
+      const existingDoc = await db.prepare("SELECT * FROM documents WHERE id = ?").bind(id).first();
       if (existingDoc?.url?.startsWith('/docs/view/')) {
         const key = existingDoc.url.split('/').pop();
         if (key) {
