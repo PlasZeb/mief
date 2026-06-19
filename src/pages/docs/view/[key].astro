@@ -3,34 +3,13 @@ import '../../../styles/global.css';
 import Navbar from '../../../components/Navbar.astro';
 import Footer from '../../../components/Footer.astro';
 
-// @ts-ignore
-import { env as cfEnv } from 'cloudflare:workers';
-
 const { key } = Astro.params;
 
 if (!key) {
   return Astro.redirect('/tudastar');
 }
 
-const runtimeEnv = (Astro.locals as any)?.runtime?.env;
-const directLocals = (Astro.locals as any)?.DOCUMENTS ? (Astro.locals as any) : null;
-const env = runtimeEnv || directLocals || cfEnv || (typeof globalThis !== 'undefined' ? globalThis : {});
-const kv = env.DOCUMENTS;
-
-let pdfDataUrl: string | null = null;
-
-if (kv) {
-  const pdfBuffer = await kv.get(key, { type: 'arrayBuffer' });
-  if (pdfBuffer) {
-    const bytes = new Uint8Array(pdfBuffer);
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    pdfDataUrl = `data:application/pdf;base64,${btoa(binary)}`;
-  }
-}
-
+const pdfUrl = `/docs/${key}`;
 const viewerUrl = `/docs/view/${key}`;
 ---
 
@@ -56,29 +35,39 @@ const viewerUrl = `/docs/view/${key}`;
             </div>
             <div class="flex flex-wrap gap-3">
               <a href={viewerUrl} target="_blank" rel="noreferrer" class="button-primary">Megnyitás új lapon</a>
+              <a href={pdfUrl} target="_blank" rel="noreferrer" class="button-secondary">PDF közvetlen megnyitása</a>
               <a href="/tudastar" class="button-secondary">Vissza a tudástárra</a>
             </div>
           </div>
 
           <div class="mt-8 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-100">
-            {pdfDataUrl ? (
-              <iframe
-                src={pdfDataUrl}
-                class="h-[78vh] w-full"
-                title="Dokumentum előnézet"
-              ></iframe>
-            ) : (
-              <div class="flex h-[78vh] items-center justify-center p-8 text-center">
-                <div>
-                  <p class="text-lg font-semibold text-slate-950">A dokumentum nem érhető el.</p>
-                  <p class="mt-2 text-sm text-slate-600">Lehet, hogy a fájl nincs meg a dokumentumtárolóban, vagy a binding nincs konfigurálva.</p>
-                </div>
-              </div>
-            )}
+            <iframe id="pdf-frame" class="h-[78vh] w-full" title="Dokumentum előnézet"></iframe>
           </div>
         </section>
       </div>
     </main>
+
+    <script is:inline define:vars={{ pdfUrl }}>
+      const frame = document.getElementById('pdf-frame');
+      const container = frame?.parentElement;
+
+      fetch(pdfUrl)
+        .then(async (response) => {
+          if (!response.ok) {
+            throw new Error(`PDF load failed: ${response.status}`);
+          }
+          return response.blob();
+        })
+        .then((blob) => {
+          const objectUrl = URL.createObjectURL(blob);
+          frame.src = objectUrl;
+        })
+        .catch(() => {
+          if (container) {
+            container.innerHTML = '<div class="flex h-[78vh] items-center justify-center p-8 text-center"><div><p class="text-lg font-semibold text-slate-950">A dokumentum nem tölthető be.</p><p class="mt-2 text-sm text-slate-600">Nyisd meg a PDF-et a külön megnyitó gombbal, vagy ellenőrizd, hogy a fájl tényleg a dokumentumtárolóban van.</p></div></div>';
+          }
+        });
+    </script>
 
     <Footer />
   </body>
