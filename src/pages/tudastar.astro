@@ -28,6 +28,11 @@ const allasfoglalasok = documents.filter((d) => d.type === 'allasfoglalas');
 const egyeb = documents.filter((d) => d.type === 'egyeb');
 const featuredBriefs = briefs.slice(0, 2);
 const latestDocuments = documents.slice(0, 3);
+
+const documentViewerUrl = (url?: string | null) => {
+  if (!url) return '#';
+  return url.startsWith('/docs/') ? url.replace('/docs/', '/docs/view/') : url;
+};
 ---
 
 <html lang="hu" class="scroll-smooth">
@@ -92,7 +97,7 @@ const latestDocuments = documents.slice(0, 3);
                 <div class="mt-5 space-y-4">
                   {latestDocuments.length > 0 ? (
                     latestDocuments.map((doc) => (
-                      <a href={doc.url} target="_blank" rel="noreferrer" class="block rounded-2xl border border-slate-200 bg-slate-50 p-4 hover:border-cyan-200 hover:bg-cyan-50/70">
+                      <a href={documentViewerUrl(doc.url)} target="_blank" rel="noreferrer" class="block rounded-2xl border border-slate-200 bg-slate-50 p-4 hover:border-cyan-200 hover:bg-cyan-50/70">
                         <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-cyan-700">{doc.type}</p>
                         <p class="mt-2 text-sm font-semibold text-slate-950">{doc.title}</p>
                         <p class="mt-1 text-xs text-slate-500">{doc.published_at}</p>

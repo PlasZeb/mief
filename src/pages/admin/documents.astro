@@ -84,6 +84,11 @@ if (db) {
   const result = await db.prepare("SELECT * FROM documents ORDER BY published_at DESC").all();
   documents = result.results || [];
 }
+
+const documentViewerUrl = (url?: string | null) => {
+  if (!url) return '#';
+  return url.startsWith('/docs/') ? url.replace('/docs/', '/docs/view/') : url;
+};
 ---
 
 <html lang="hu">
@@ -193,7 +198,7 @@ if (db) {
                     <span class="text-xs text-slate-400">📅 {doc.published_at}</span>
                   </div>
                   <h3 class="font-bold text-white text-lg">{doc.title}</h3>
-                  <a href={doc.url} target="_blank" class="text-sm text-cyan-400 hover:underline mt-1 inline-block">Fájl megtekintése &rarr;</a>
+                  <a href={documentViewerUrl(doc.url)} target="_blank" class="text-sm text-cyan-400 hover:underline mt-1 inline-block">Fájl megtekintése &rarr;</a>
                 </div>
                 
                 <div class="flex gap-2 w-full sm:w-auto">

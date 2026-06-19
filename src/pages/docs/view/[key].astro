@@ -1,0 +1,54 @@
+---
+import '../../../styles/global.css';
+import Navbar from '../../../components/Navbar.astro';
+import Footer from '../../../components/Footer.astro';
+
+const { key } = Astro.params;
+
+if (!key) {
+  return Astro.redirect('/tudastar');
+}
+
+const pdfUrl = `/docs/${key}`;
+---
+
+<html lang="hu" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" />
+    <title>Dokumentum megtekintése | MIEF</title>
+    <meta name="description" content="MIEF dokumentum megnyitása és megtekintése." />
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+    <Navbar />
+
+    <main class="py-16 sm:py-20">
+      <div class="mx-auto max-w-7xl px-6">
+        <section class="panel p-6 sm:p-8">
+          <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p class="section-kicker">Dokumentum</p>
+              <h1 class="section-heading">PDF megtekintése</h1>
+              <p class="section-intro">Ha a beágyazott nézet nem tölt be, nyisd meg külön a dokumentumot.</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <a href={pdfUrl} target="_blank" rel="noreferrer" class="button-primary">Megnyitás új lapon</a>
+              <a href="/tudastar" class="button-secondary">Vissza a tudástárra</a>
+            </div>
+          </div>
+
+          <div class="mt-8 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-100">
+            <iframe
+              src={pdfUrl}
+              class="h-[78vh] w-full"
+              title="Dokumentum előnézet"
+            ></iframe>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <Footer />
+  </body>
+</html>
