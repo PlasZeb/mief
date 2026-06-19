@@ -14,26 +14,41 @@ export const GET: APIRoute = async ({ params, locals }) => {
   const directLocals = (locals as any)?.DOCUMENTS ? locals as any : null;
   const env = runtimeEnv || directLocals || cfEnv || (typeof globalThis !== 'undefined' ? globalThis : {});
 
+  const bucket = env.DOCUMENTS_BUCKET;
   const kv = env.DOCUMENTS;
 
-  if (!kv) {
+  if (!bucket && !kv) {
     return new Response('Document storage not configured', { status: 500 });
   }
 
   try {
-    const pdfBuffer = await kv.get(key, { type: 'arrayBuffer' });
-
-    if (!pdfBuffer) {
-      return new Response(`Document not found in KV: ${key}`, { status: 404 });
+    if (bucket) {
+      const object = await bucket.get(key);
+      if (object) {
+        return new Response(object.body, {
+          headers: {
+            'Content-Type': object.httpMetadata?.contentType || 'application/pdf',
+            'Cache-Control': 'public, max-age=31536000',
+            'Content-Disposition': 'inline'
+          }
+        });
+      }
     }
 
-    return new Response(pdfBuffer, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Cache-Control': 'public, max-age=31536000', // Cache for 1 year
-        'Content-Disposition': 'inline'
+    if (kv) {
+      const pdfBuffer = await kv.get(key, { type: 'arrayBuffer' });
+      if (pdfBuffer) {
+        return new Response(pdfBuffer, {
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Cache-Control': 'public, max-age=31536000', // Cache for 1 year
+            'Content-Disposition': 'inline'
+          }
+        });
       }
-    });
+    }
+
+    return new Response(`Document not found in storage: ${key}`, { status: 404 });
   } catch (error) {
     console.error("Error fetching document:", error);
     return new Response('Internal Server Error', { status: 500 });

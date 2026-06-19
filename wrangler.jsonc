@@ -11,6 +11,12 @@
 			"database_id": "8203ce7a-a9cb-4968-bd12-b78cdd75c970"
 		}
 	],
+	"r2_buckets": [
+		{
+			"binding": "DOCUMENTS_BUCKET",
+			"bucket_name": "mief-documents"
+		}
+	],
 	"kv_namespaces": [
 		{
 			"binding": "SESSION",

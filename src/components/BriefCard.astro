@@ -19,7 +19,11 @@ const {
   featured = false,
 } = Astro.props;
 
-const resolvedHref = href.startsWith('/docs/') ? href.replace('/docs/', '/docs/view/') : href;
+const resolvedHref = href.startsWith('/docs/view/')
+  ? href
+  : href.startsWith('/docs/')
+    ? href.replace('/docs/', '/docs/view/')
+    : href;
 
 const accentClasses = {
   cyan: 'border-cyan-200 bg-cyan-50 text-cyan-700',

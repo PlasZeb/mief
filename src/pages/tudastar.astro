@@ -31,6 +31,7 @@ const latestDocuments = documents.slice(0, 3);
 
 const documentViewerUrl = (url?: string | null) => {
   if (!url) return '#';
+  if (url.startsWith('/docs/view/')) return url;
   return url.startsWith('/docs/') ? url.replace('/docs/', '/docs/view/') : url;
 };
 ---

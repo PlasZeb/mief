@@ -10,6 +10,8 @@ if (session !== "true") {
 }
 
 const db = (env as any).mief_db;
+const documentsBucket = (env as any).DOCUMENTS_BUCKET;
+const legacyDocuments = (env as any).DOCUMENTS;
 
 // Tábla migrációja
 try {
@@ -46,8 +48,18 @@ if (Astro.request.method === "POST" && db) {
         if (pdfFile && pdfFile.size > 0) {
           const fileKey = crypto.randomUUID() + '.pdf';
           const buffer = await pdfFile.arrayBuffer();
-          await env.DOCUMENTS.put(fileKey, buffer);
-          url = `/docs/${fileKey}`;
+          if (documentsBucket) {
+            await documentsBucket.put(fileKey, buffer, {
+              httpMetadata: {
+                contentType: 'application/pdf',
+              },
+            });
+          } else if (legacyDocuments) {
+            await legacyDocuments.put(fileKey, buffer);
+          } else {
+            throw new Error('Document storage not configured');
+          }
+          url = `/docs/view/${fileKey}`;
         }
 
         if (id) {
@@ -68,6 +80,18 @@ if (Astro.request.method === "POST" && db) {
   } else if (action === "delete") {
     const id = data.get("id");
     try {
+      const existingDoc = documents.find((doc) => String(doc.id) === String(id));
+      if (existingDoc?.url?.startsWith('/docs/view/')) {
+        const key = existingDoc.url.split('/').pop();
+        if (key) {
+          if (documentsBucket) {
+            await documentsBucket.delete(key);
+          }
+          if (legacyDocuments) {
+            await legacyDocuments.delete(key);
+          }
+        }
+      }
       await db.prepare("DELETE FROM documents WHERE id = ?").bind(id).run();
       return Astro.redirect("/admin/documents?msg=deleted");
     } catch (e) { 
@@ -87,6 +111,7 @@ if (db) {
 
 const documentViewerUrl = (url?: string | null) => {
   if (!url) return '#';
+  if (url.startsWith('/docs/view/')) return url;
   return url.startsWith('/docs/') ? url.replace('/docs/', '/docs/view/') : url;
 };
 ---
