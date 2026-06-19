@@ -3,13 +3,35 @@ import '../../../styles/global.css';
 import Navbar from '../../../components/Navbar.astro';
 import Footer from '../../../components/Footer.astro';
 
+// @ts-ignore
+import { env as cfEnv } from 'cloudflare:workers';
+
 const { key } = Astro.params;
 
 if (!key) {
   return Astro.redirect('/tudastar');
 }
 
-const pdfUrl = `/docs/${key}`;
+const runtimeEnv = (Astro.locals as any)?.runtime?.env;
+const directLocals = (Astro.locals as any)?.DOCUMENTS ? (Astro.locals as any) : null;
+const env = runtimeEnv || directLocals || cfEnv || (typeof globalThis !== 'undefined' ? globalThis : {});
+const kv = env.DOCUMENTS;
+
+let pdfDataUrl: string | null = null;
+
+if (kv) {
+  const pdfBuffer = await kv.get(key, { type: 'arrayBuffer' });
+  if (pdfBuffer) {
+    const bytes = new Uint8Array(pdfBuffer);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    pdfDataUrl = `data:application/pdf;base64,${btoa(binary)}`;
+  }
+}
+
+const viewerUrl = `/docs/view/${key}`;
 ---
 
 <html lang="hu" class="scroll-smooth">
@@ -30,20 +52,29 @@ const pdfUrl = `/docs/${key}`;
             <div>
               <p class="section-kicker">Dokumentum</p>
               <h1 class="section-heading">PDF megtekintése</h1>
-              <p class="section-intro">Ha a beágyazott nézet nem tölt be, nyisd meg külön a dokumentumot.</p>
+              <p class="section-intro">A dokumentum a lapon belül jelenik meg. Ha a böngésző nem támogatja az előnézetet, a PDF külön is megnyitható ugyanerről az oldalról.</p>
             </div>
             <div class="flex flex-wrap gap-3">
-              <a href={pdfUrl} target="_blank" rel="noreferrer" class="button-primary">Megnyitás új lapon</a>
+              <a href={viewerUrl} target="_blank" rel="noreferrer" class="button-primary">Megnyitás új lapon</a>
               <a href="/tudastar" class="button-secondary">Vissza a tudástárra</a>
             </div>
           </div>
 
           <div class="mt-8 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-100">
-            <iframe
-              src={pdfUrl}
-              class="h-[78vh] w-full"
-              title="Dokumentum előnézet"
-            ></iframe>
+            {pdfDataUrl ? (
+              <iframe
+                src={pdfDataUrl}
+                class="h-[78vh] w-full"
+                title="Dokumentum előnézet"
+              ></iframe>
+            ) : (
+              <div class="flex h-[78vh] items-center justify-center p-8 text-center">
+                <div>
+                  <p class="text-lg font-semibold text-slate-950">A dokumentum nem érhető el.</p>
+                  <p class="mt-2 text-sm text-slate-600">Lehet, hogy a fájl nincs meg a dokumentumtárolóban, vagy a binding nincs konfigurálva.</p>
+                </div>
+              </div>
+            )}
           </div>
         </section>
       </div>
