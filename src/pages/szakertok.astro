@@ -21,13 +21,6 @@ type ExpertRow = {
   display_order?: number | null;
 };
 
-const normalizeImageUrl = (url?: string | null) => {
-  const trimmed = url?.trim();
-  if (!trimmed) return null;
-  if (/^(https?:|data:|\/)/i.test(trimmed)) return trimmed;
-  return `/${trimmed}`;
-};
-
 let experts: ExpertRow[] = [];
 
 if (db) {
@@ -39,7 +32,7 @@ if (db) {
   }
 }
 
-const founders = experts.filter((e) => e.is_founder);
+const founder = experts.find((e) => e.is_founder);
 const regularExperts = experts.filter((e) => !e.is_founder);
 ---
 
@@ -76,17 +69,15 @@ const regularExperts = experts.filter((e) => !e.is_founder);
             description="A szakértők egységes kártyarendszerben jelennek meg."
           />
 
-          {founders.length > 0 && (
-            <div class="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {founders.map((founder) => (
-                <ExpertCard
-                  name={founder.name}
-                  role={founder.role}
-                  linkedinUrl={founder.linkedin_url}
-                  imageUrl={normalizeImageUrl(founder.image_url)}
-                  founder
-                />
-              ))}
+          {founder && (
+            <div class="mt-12">
+              <ExpertCard
+                name={founder.name}
+                role={founder.role}
+                linkedinUrl={founder.linkedin_url}
+                imageUrl={founder.image_url}
+                founder
+              />
             </div>
           )}
 
@@ -97,7 +88,7 @@ const regularExperts = experts.filter((e) => !e.is_founder);
                   name={expert.name}
                   role={expert.role}
                   linkedinUrl={expert.linkedin_url}
-                  imageUrl={normalizeImageUrl(expert.image_url)}
+                  imageUrl={expert.image_url}
                 />
               ))
             ) : (
