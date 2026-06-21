@@ -21,6 +21,13 @@ type ExpertRow = {
   display_order?: number | null;
 };
 
+const normalizeImageUrl = (url?: string | null) => {
+  const trimmed = url?.trim();
+  if (!trimmed) return null;
+  if (/^(https?:|data:|\/)/i.test(trimmed)) return trimmed;
+  return `/${trimmed}`;
+};
+
 let experts: ExpertRow[] = [];
 
 if (db) {
@@ -75,7 +82,7 @@ const regularExperts = experts.filter((e) => !e.is_founder);
                 name={founder.name}
                 role={founder.role}
                 linkedinUrl={founder.linkedin_url}
-                imageUrl={founder.image_url}
+                imageUrl={normalizeImageUrl(founder.image_url)}
                 founder
               />
             </div>
@@ -88,7 +95,7 @@ const regularExperts = experts.filter((e) => !e.is_founder);
                   name={expert.name}
                   role={expert.role}
                   linkedinUrl={expert.linkedin_url}
-                  imageUrl={expert.image_url}
+                  imageUrl={normalizeImageUrl(expert.image_url)}
                 />
               ))
             ) : (
