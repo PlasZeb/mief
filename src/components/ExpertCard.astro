@@ -9,12 +9,19 @@ interface Props {
 }
 
 const { name, role, linkedinUrl, imageUrl, founder = false, topics = [] } = Astro.props;
+
+const normalizedImageUrl = (() => {
+  const url = imageUrl?.trim();
+  if (!url) return null;
+  if (/^(https?:|data:|\/)/i.test(url)) return url;
+  return `/${url}`;
+})();
 ---
 
 <article class:list={["panel group p-6 sm:p-7", founder ? "border-cyan-200 bg-cyan-50/70" : ""]}>
   <div class="flex items-start gap-4">
-    {imageUrl ? (
-      <img src={imageUrl} alt={name} class="h-16 w-16 shrink-0 rounded-2xl object-cover ring-1 ring-slate-200" />
+    {normalizedImageUrl ? (
+      <img src={normalizedImageUrl} alt={name} loading="lazy" decoding="async" class="h-16 w-16 shrink-0 rounded-2xl object-cover ring-1 ring-slate-200" />
     ) : (
       <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 ring-1 ring-slate-200">
         <svg class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
