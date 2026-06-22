@@ -11,8 +11,9 @@ export const GET: APIRoute = async ({ params, locals }) => {
   }
 
   const runtimeEnv = (locals as any)?.runtime?.env;
-  const directLocals = locals as any;
-  const env = runtimeEnv || directLocals || cfEnv || (typeof globalThis !== 'undefined' ? globalThis : {});
+  const localBindings = locals as any;
+  const hasLocalDocumentBindings = !!localBindings?.DOCUMENTS_BUCKET || !!localBindings?.DOCUMENTS;
+  const env = runtimeEnv || (hasLocalDocumentBindings ? localBindings : null) || cfEnv || (typeof globalThis !== 'undefined' ? globalThis : {});
 
   const bucket = env?.DOCUMENTS_BUCKET;
   const kv = env?.DOCUMENTS;

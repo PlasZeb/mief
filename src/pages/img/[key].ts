@@ -17,8 +17,9 @@ export const GET: APIRoute = async ({ params, locals }) => {
   // 4. Globális változó (legacy Workers)
   
   const runtimeEnv = (locals as any)?.runtime?.env;
-  const directLocals = (locals as any)?.EXPERT_IMAGES ? locals as any : null;
-  const env = runtimeEnv || directLocals || cfEnv || (typeof globalThis !== 'undefined' ? globalThis : {});
+  const localBindings = locals as any;
+  const hasLocalExpertImages = !!localBindings?.EXPERT_IMAGES;
+  const env = runtimeEnv || (hasLocalExpertImages ? localBindings : null) || cfEnv || (typeof globalThis !== 'undefined' ? globalThis : {});
   
   const kv = env.EXPERT_IMAGES;
   
