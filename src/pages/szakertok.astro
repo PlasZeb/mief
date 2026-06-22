@@ -21,6 +21,15 @@ type ExpertRow = {
   display_order?: number | null;
 };
 
+if (db) {
+  // Régi D1 séma esetén ez biztosítja, hogy a publikus oldal ne essen el
+  // az új mezők vagy az ORDER BY oszlopok hiánya miatt.
+  try { await db.prepare("ALTER TABLE experts ADD COLUMN linkedin_url TEXT").run(); } catch (e) {}
+  try { await db.prepare("ALTER TABLE experts ADD COLUMN is_founder INTEGER DEFAULT 0").run(); } catch (e) {}
+  try { await db.prepare("ALTER TABLE experts ADD COLUMN image_url TEXT").run(); } catch (e) {}
+  try { await db.prepare("ALTER TABLE experts ADD COLUMN display_order INTEGER DEFAULT 10").run(); } catch (e) {}
+}
+
 const normalizeImageUrl = (url?: string | null) => {
   const trimmed = url?.trim();
   if (!trimmed) return null;

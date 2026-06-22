@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS experts (
   role TEXT NOT NULL,
   linkedin_url TEXT,
   is_founder INTEGER DEFAULT 0,
+  image_url TEXT,
+  display_order INTEGER DEFAULT 10,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
