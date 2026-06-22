@@ -13,6 +13,7 @@ Minden jelentős változtatás ebben a fájlban kerül rögzítésre.
 - **Új komponensek:** `Hero.astro`, `SectionHeader.astro`, `BriefCard.astro`, `ExpertCard.astro`, `EventCard.astro`, `CTA.astro`.
 - **Globális stílus:** Új, világos intézményi design system a `src/styles/global.css` fájlban.
 - **Biztonsági mentés:** A redesign előtt helyi fájlszintű backup készült a jelenlegi állapotról.
+- **Starwind scaffold:** A korábbi Starwind-alapú Tailwind scaffold külön maradt a végleges arculattól; ebből a CSS variable / theme struktúrát, a Tailwind v4 alapot és a forms/animate kiegészítéseket vettük fel kiindulásként.
 
 ### Javítva
 - **Astro config:** A korábbi, duplikált Tailwind import megszüntetve.

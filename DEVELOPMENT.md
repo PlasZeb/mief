@@ -15,6 +15,21 @@ Ez a dokumentum segítséget nyújt a weboldal karbantartásához és fejleszté
 - `schema.sql`: Az adatbázis szerkezete.
 - `wrangler.jsonc`: Cloudflare konfiguráció.
 
+## 🎨 Starwind scaffold
+A projektben korábban egy Starwind-alapú Tailwind scaffold is megjelent, amely külön fájlokban maradt meg:
+- `src/styles/starwind.css`
+- `starwind.config.json`
+- `.vscode/starwind.code-snippets`
+
+Ebből a következők voltak a fő felhasznált elemek:
+- Tailwind v4 alap
+- CSS variable alapú szín- és radius rendszer
+- `@tailwindcss/forms`
+- `tw-animate-css`
+- dark/light theme változók
+
+A végleges, jelenleg használt nyilvános arculat már a `src/styles/global.css` és az új Astro komponensek alapján működik, nem a Starwind preset maradt az aktív design rendszer.
+
 ## 🚀 Helyi fejlesztés
 1. Installáció: `npm install`
 2. Környezeti változók: Hozz létre egy `.dev.vars` fájlt:
