@@ -42,8 +42,8 @@ if (Astro.request.method === "POST" && db) {
     const is_founder = (data.getAll("is_founder") as string[]).includes("1") ? 1 : 0;
     const display_order = parseInt(data.get("display_order") as string) || 10;
     const imageFile = data.get("image_file") as File;
-    
-    let image_url = data.get("current_image_url") as string || null;
+    const imageUrlInput = (data.get("image_url") as string | null)?.trim();
+    let image_url = imageUrlInput || (data.get("current_image_url") as string) || null;
 
     try {
       if (imageFile && imageFile.name && imageFile.size > 0) {
@@ -146,9 +146,15 @@ if (db) {
               </div>
 
               <div>
-                <label for="image_file" class="block text-sm font-medium text-slate-300 mb-1">Profilkép feltöltése</label>
+                <label for="image_url" class="block text-sm font-medium text-slate-300 mb-1">Kép URL / útvonal</label>
+                <input type="text" id="image_url" name="image_url" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-cyan-400 focus:outline-none" placeholder="Pl. /assets/logo.jpg vagy https://..." />
+                <p class="mt-1 text-[10px] italic text-slate-500">Ez a legegyszerűbb és legbiztosabb megoldás. Használhatsz teljes URL-t vagy a <code>public</code> mappából útvonalat, például <code>/assets/kep.jpg</code>.</p>
+              </div>
+
+              <div>
+                <label for="image_file" class="block text-sm font-medium text-slate-300 mb-1">Profilkép feltöltése (opcionális)</label>
                 <input type="file" id="image_file" name="image_file" accept="image/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-500/20 file:text-cyan-400 hover:file:bg-cyan-500/30" />
-                <p class="mt-1 text-[10px] italic text-slate-500">Válassz egy képet a gépedről. A fájl az <code>EXPERT_IMAGES</code> KV-be kerül, és <code>/img/...</code> útvonalon jelenik meg. Ha nem választasz újat, a régi megmarad.</p>
+                <p class="mt-1 text-[10px] italic text-slate-500">Ha itt választasz fájlt, az felülírja a fenti URL-t, és a kép a <code>EXPERT_IMAGES</code> KV-be kerül. Hibakereséshez a fenti URL-es megadás egyszerűbb.</p>
               </div>
 
               <div class="flex items-center gap-3 pt-2">
@@ -240,6 +246,7 @@ if (db) {
           document.getElementById('name').value = btn.dataset.name;
           document.getElementById('role').value = btn.dataset.role;
           document.getElementById('linkedin_url').value = btn.dataset.linkedin || '';
+          document.getElementById('image_url').value = btn.dataset.image || '';
           document.getElementById('current_image_url').value = btn.dataset.image || '';
           
           document.getElementById('is_founder').checked = btn.dataset.founder === '1';
@@ -254,6 +261,7 @@ if (db) {
       function resetForm() {
         document.getElementById('form-title').innerText = 'Új szakértő hozzáadása';
         document.getElementById('expert-id').value = '';
+        document.getElementById('image_url').value = '';
         document.getElementById('current_image_url').value = '';
         document.getElementById('expert-form').reset();
         document.getElementById('display_order').value = '10';
