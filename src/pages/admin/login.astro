@@ -11,7 +11,9 @@ if (Astro.request.method === "POST") {
   const password = data.get("password");
   const envPassword = (env as any).ADMIN_PASSWORD;
 
-  if (password === envPassword) {
+  if (!envPassword) {
+    error = "Az admin jelszĂł nincs beĂˇllĂ­tva a kĂ¶rnyezeti vĂˇltozĂłkban.";
+  } else if (password === envPassword) {
     // EgyszerĹ± session cookie beĂˇllĂ­tĂˇsa
     Astro.cookies.set("admin_session", "true", {
       path: "/",
